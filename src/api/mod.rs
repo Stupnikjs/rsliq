@@ -20,11 +20,14 @@ pub struct HttpClient {
     client: Client,
 }
 
+// transforme struct en json 
 #[derive(Serialize)]
 struct QueryBody<'a> {
     query: &'a str,
 }
 
+
+// format de reponse GraphQL
 #[derive(Deserialize)]
 struct Envelope {
     data: Option<Value>,
@@ -36,11 +39,13 @@ pub struct GraphQLError {
     pub message: String,
 }
 
+// pour permettre println!("{}", err)
 impl fmt::Display for GraphQLError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "graphql: {}", self.message)
     }
 }
+// GraphQLError deviens une reele erreur rust
 impl std::error::Error for GraphQLError {}
 
 impl HttpClient {
@@ -51,6 +56,14 @@ impl HttpClient {
         }
     }
 
+
+    /*
+    le ? est un shortcut pour
+    match result {
+    Ok(v) => v,
+    Err(e) => return Err(e.into())
+    }
+     */
     pub async fn query<T: DeserializeOwned>(&self, query: &str) -> anyhow::Result<T> {
         let resp = self
             .client
@@ -59,6 +72,8 @@ impl HttpClient {
             .send()
             .await?;
 
+
+        // transforme json en envelope 
         let envelope: Envelope = resp.json().await?;
 
         // err check
