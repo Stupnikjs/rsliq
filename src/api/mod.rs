@@ -7,12 +7,14 @@ pub mod positions;
 pub mod queries;
 pub  mod types;
 pub mod number; 
+pub mod market;
 
 
 const MORPHO_GRAPHQL_URL: &str = "https://api.morpho.org/graphql";
 
 
 pub use positions::fetch_all_positions;
+pub use market::fetch_all_market;
 
 
 pub struct HttpClient {

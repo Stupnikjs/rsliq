@@ -1,7 +1,10 @@
 
 use alloy::primitives::U256;
  
-// utilities 
+
+mod types;
+
+
 fn wad() -> U256 {
     U256::from(10u64).pow(U256::from(18))
 }
