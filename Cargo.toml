@@ -1,0 +1,13 @@
+[package]
+name = "rs_liq"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hex = "0.4"
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+alloy = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+reqwest = "0.13.4"
