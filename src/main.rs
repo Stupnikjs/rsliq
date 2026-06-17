@@ -10,7 +10,9 @@ async fn main() -> anyhow::Result<()> {
     let chain_id = 8453u32; // 1 pour Ethereum Mainnet, ou 8453 pour Base (999 n'existe pas chez Morpho, attention !)
     let res: &[MarketParam] = &api_fetch_all_market_by_chainid(chain_id).await?; 
     let store = cache::MarketStore::new(res);
-    //iterer sur tout les marché pour fetch les pos 
+    // for store.markets 
+    // fetch_posit
+    
     Ok(())
 }
 
