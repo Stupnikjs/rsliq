@@ -37,8 +37,9 @@ pub struct MarketSnapshot {
     pub positions: Vec<BorrowPosition>,
 }
 
-pub struct MarketStore {
+pub struct MarketCache {
     markets: RwLock<HashMap<MarketId, Arc<RwLock<Market>>>>,
+    marketMap: <HashMap<MarketId,MarketParam>,
 }
 
 
