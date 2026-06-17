@@ -7,12 +7,10 @@ mod cache;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // let market_id = parse_market_id("0x8793cf302b8ffd655ab97bd1c695dbd967807e8367a65cb2f4edaf1380ba1bda")?;
     let chain_id = 8453u32; // 1 pour Ethereum Mainnet, ou 8453 pour Base (999 n'existe pas chez Morpho, attention !)
-    let markets = fetch_all_market(chain_id).await?; 
-
-    print!("{} markets found \n ", markets.len()); 
-    // retourne tuple vide 
+    let res: &[MarketParam] = &api_fetch_all_market_by_chainid(chain_id).await?; 
+    let store = cache::MarketStore::new(res);
+    //iterer sur tout les marché pour fetch les pos 
     Ok(())
 }
 
