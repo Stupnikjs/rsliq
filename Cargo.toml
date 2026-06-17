@@ -11,3 +11,4 @@ serde = { version = "1", features = ["derive"] }
 alloy = { version = "1", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
+alloy-primitives = "1.6.0"

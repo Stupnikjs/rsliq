@@ -3370,6 +3370,7 @@ name = "rs_liq"
 version = "0.1.0"
 dependencies = [
  "alloy",
+ "alloy-primitives",
  "anyhow",
  "hex",
  "reqwest 0.12.28",

@@ -1,44 +1,56 @@
-mod morpho;
-mod api; 
+#![allow(dead_code, unused_variables, unused_imports)]
 
+use crate::{api::{fetch_all_market, market}, morpho::types::MarketParam};
+mod morpho;
+mod api;
+mod cache; 
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let market_id = parse_market_id("0x8793cf302b8ffd655ab97bd1c695dbd967807e8367a65cb2f4edaf1380ba1bda")?; // ta marketUniqueKey en hex
-    let chain_id = 8453u32; // Base, par ex.
-    /* 
-    let positions = api::fetch_all_positions(market_id, chain_id).await?;
+    // let market_id = parse_market_id("0x8793cf302b8ffd655ab97bd1c695dbd967807e8367a65cb2f4edaf1380ba1bda")?;
+    let chain_id = 8453u32; // 1 pour Ethereum Mainnet, ou 8453 pour Base (999 n'existe pas chez Morpho, attention !)
+    let markets = fetch_all_market(chain_id).await?; 
 
-    println!("fetched {} positions", positions.len());
-    for p in &positions {
-        println!(
-            "user={} borrow_shares={} collateral={}",
-            p.user.address,
-            p.state.borrow_shares,
-            p.state.collateral
-        );
-    }
-
+    print!("{} markets found \n ", markets.len()); 
+    // retourne tuple vide 
     Ok(())
-    */
-
-     let markets = api::fetch_all_market(chain_id).await?;
-
-    println!("fetched {} market", markets.len());
-    for p in &markets {
-        // passer tout les marché dans un Vec<MorphoMarket>
-        println!(
-         "markt {:?}", p.collateral_asset);
-    }
-
-    Ok(())
-
 }
 
-fn parse_market_id(s: &str) -> anyhow::Result<[u8; 32]> {
-    let s = s.trim_start_matches("0x");
-    let bytes = hex::decode(s)?;
-    bytes
-        .try_into()
-        .map_err(|_| anyhow::anyhow!("market id must be 32 bytes"))
+
+
+
+
+ pub async fn api_fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
+     let market_result = api::fetch_all_market(chain_id).await;
+    // On crée le vecteur qui va recevoir les marchés en cas de succès
+    let mut all_markets = Vec::new();
+
+    match market_result {
+        // 1. On extrait la valeur "result" à l'intérieur du Ok
+        Ok(result) => {
+            all_markets.extend(result);
+        }
+        Err(e) => {
+            // Si ça plante, on intercepte l'erreur ici !
+            println!("❌ Erreur lors de la requête GraphQL : {:?}", e);
+            // Affiche la cause exacte (ex: quel champ est 'null')
+            println!("🔍 Cause détaillée : {}", e.root_cause());
+            // On s'arrête ici en retournant l'erreur au main
+            return Err(e);
+        }
+    }
+
+    let mut all_morpho_markets:Vec<MarketParam> = Vec::new();
+    
+    for m in &all_markets {
+        // Tu peux maintenant afficher tes marchés.
+        // J'affiche l'ID et l'actif de prêt (loan_asset) comme exemple.
+    
+        let morpho_m =  market::market_item_to_morpho_market(m, chain_id)?; 
+        print!("{}\n", morpho_m.get_pair()); 
+        all_morpho_markets.push(morpho_m);
+    }
+
+
+    Ok(all_morpho_markets)
 }

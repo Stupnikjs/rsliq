@@ -1,4 +1,4 @@
-
+#![allow(dead_code, unused_variables, unused_imports)]
 
 pub fn positions_query(market_id: &str, chain_id: u32, skip: i64) -> String {
     format!(

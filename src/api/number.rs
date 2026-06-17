@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_variables, unused_imports)]
 // api/number.rs
 use serde::{Deserialize, Deserializer, de::Error};
 use std::fmt;

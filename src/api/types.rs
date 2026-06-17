@@ -1,6 +1,8 @@
+#![allow(dead_code, unused_variables, unused_imports)]
 // api/types.rs
 use super::number::Number;
 use serde::Deserialize;
+
 
 #[derive(Debug, Deserialize)]
 pub struct Asset {

@@ -1,9 +1,7 @@
-
+#![allow(dead_code, unused_variables, unused_imports)]
 use alloy::primitives::U256;
- 
 
-mod types;
-
+pub mod types;
 
 fn wad() -> U256 {
     U256::from(10u64).pow(U256::from(18))

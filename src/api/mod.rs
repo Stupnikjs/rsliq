@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_variables, unused_imports)]
 use reqwest::Client;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
