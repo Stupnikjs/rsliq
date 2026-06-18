@@ -4,8 +4,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use std::sync::Arc;
 use limiter::SimpleRateLimiter;
 
-
-pub mod limiter;
+mod limiter;
 
 #[derive(Clone)]
 pub struct RpcConnector {
