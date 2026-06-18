@@ -4,8 +4,12 @@ use alloy_primitives::{Address, U256, FixedBytes};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use crate::morpho::types::MarketParam;
+use crate::api::market::{fetch_all_market_by_chainid}; 
+use crate::api::positions::{fetch_all_positions, position_item_to_borrow_pos}; 
+use futures::stream::{self, StreamExt};
 
-pub type MarketId = [u8; 32];
+
+pub type MarketId = FixedBytes<32>;
 
 pub struct Oracle {
     pub price: U256,
@@ -63,6 +67,24 @@ impl MarketCache {
         Self { markets: RwLock::new(map) }
     }
 
+    pub fn ids(&self) -> Vec<FixedBytes<32>> {
+        self.markets
+            .read()
+            .unwrap()
+            .iter()
+            .filter(|(_, market)| !market.read().unwrap().canceled)
+            // On prend le premier élément du tuple (la clé), et on ignore le second avec `_`
+            .map(|(&id_bytes, _market)| FixedBytes::from(id_bytes)) 
+            .collect()
+    }
+
+    pub fn get_market_param_by_id(&self, id: MarketId) -> Option<MarketParam> {
+    self.markets
+        .read()
+        .unwrap()
+        .get(&id)
+        .map(|m| (*m.read().unwrap().params).clone())
+} 
 
     pub fn update<F>(&self, id: MarketId, f: F) -> bool
     where
@@ -122,14 +144,44 @@ impl PartialOrd for BorrowPosition {
 
 
 impl MarketCache {
-    pub fn ids(&self) -> Vec<FixedBytes<32>> {
-        self.markets
-            .read()
-            .unwrap()
-            .iter()
-            .filter(|(_, market)| !market.read().unwrap().canceled)
-            // On prend le premier élément du tuple (la clé), et on ignore le second avec `_`
-            .map(|(&id_bytes, _market)| FixedBytes::from(id_bytes)) 
-            .collect()
-    }
+    
+}
+
+
+
+
+
+const CONCURRENCY: usize = 200;
+
+pub async  fn init_cache() -> anyhow::Result<MarketCache> {
+    let chain_id = 8453u32;
+    let markets = fetch_all_market_by_chainid(chain_id).await?;
+    let cache = MarketCache::new(&markets);
+    println!("markets len {}", cache.ids().len()); 
+    stream::iter(cache.ids())
+        .map(|id| async move {
+            (id, fetch_all_positions(id, chain_id).await)
+        })
+        .buffer_unordered(CONCURRENCY)
+        .for_each(|(id, result)| {
+            match result {
+                Ok(items) => {
+                    if items.is_empty() || items.len() < 5 {
+                        cache.update(id, |m| m.canceled = true);          
+                    } else {
+                        let positions: Vec<_> = items
+                        .into_iter()
+                        .map(|item| position_item_to_borrow_pos(item, id))
+                        .collect();
+                    cache.update(id, |m| m.positions = positions);
+                    }
+                  
+                } 
+                Err(_err) => {}
+            }
+            futures::future::ready(())
+        })
+        .await;
+
+    Ok(cache)
 }

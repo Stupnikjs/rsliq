@@ -69,7 +69,7 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
 
 
 
- pub async fn api_fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
+ pub async fn fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
      let market_result = fetch_all_market(chain_id).await;
     // On crée le vecteur qui va recevoir les marchés en cas de succès
     let mut all_markets = Vec::new();

@@ -13,3 +13,5 @@ alloy = { version = "1", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
 alloy-primitives = "1.6.0"
+governor = "0.10.4"
+nonzero_ext = "0.3.0"
