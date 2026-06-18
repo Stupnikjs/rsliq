@@ -1,6 +1,9 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 
-use crate::{api::{fetch_all_market, market}, morpho::types::MarketParam};
+use crate::api::{fetch_all_market,fetch_all_positions, market, positions::position_item_to_borrow_pos}; 
+use crate::morpho::types::MarketParam;
+use crate::cache::{BorrowPosition, MarketCache}; 
+
 mod morpho;
 mod api;
 mod cache; 
@@ -9,15 +12,23 @@ mod cache;
 async fn main() -> anyhow::Result<()> {
     let chain_id = 8453u32; // 1 pour Ethereum Mainnet, ou 8453 pour Base (999 n'existe pas chez Morpho, attention !)
     let res: &[MarketParam] = &api_fetch_all_market_by_chainid(chain_id).await?; 
-    let store = cache::MarketStore::new(res);
-    // for store.markets 
-    // fetch_posit
+    let cache = cache::MarketCache::new(res);
+    
+    for id in cache.ids() {
+       let position_items = fetch_all_positions(id, chain_id).await?; 
+       let borrow_pos_vec: Vec<BorrowPosition> = Vec::new(); 
+       for item in position_items {
+            let borrow_pos = position_item_to_borrow_pos(item, id); 
+            borrow_pos_vec.push(borrow_pos)
+       }
+       let ok = cache.update(id.0, |m| {
+         let borrow_positions = position_item_to_borrow_pos(pos_item, market_id); 
+         m.positions = borrow_positions;   
+       })
+    } 
     
     Ok(())
 }
-
-
-
 
 
  pub async fn api_fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
@@ -43,12 +54,12 @@ async fn main() -> anyhow::Result<()> {
     let mut all_morpho_markets:Vec<MarketParam> = Vec::new();
     
     for m in &all_markets {
-        // Tu peux maintenant afficher tes marchés.
-        // J'affiche l'ID et l'actif de prêt (loan_asset) comme exemple.
-    
-        let morpho_m =  market::market_item_to_morpho_market(m, chain_id)?; 
-        print!("{}\n", morpho_m.get_pair()); 
+        // Si la conversion réussit, on récupère le marché, sinon on passe au suivant
+    if let Ok(morpho_m) = market::market_item_to_morpho_market(m, chain_id) {
         all_morpho_markets.push(morpho_m);
+    } else {
+        println!("error while getting params on {} market", m.id)
+    }
     }
 
 
