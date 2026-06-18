@@ -1,15 +1,12 @@
-use alloy::{
-    network::Ethereum,
-    providers::{Provider, ProviderBuilder, RootProvider},
-    rpc::client::{BatchRequest, ClientBuilder, RpcClient},
-    transports::http::{Client, Http},
+use alloy::rpc::client::{ClientBuilder, RpcClient};
+use governor::{
+    clock::DefaultClock,
+    state::{InMemoryState, NotKeyed},
+    Quota, RateLimiter,
 };
-use governor::{Quota, RateLimiter, state::{NotKeyed, InMemoryState}, clock::DefaultClock};
 use nonzero_ext::nonzero;
-use serde::de::DeserializeOwned;
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::sync::Arc;
-use tokio_util::sync::CancellationToken;
 
 // ---------------------------------------------------------------------------
 // BatchElem
@@ -18,41 +15,13 @@ use tokio_util::sync::CancellationToken;
 #[derive(Debug, Clone)]
 pub struct BatchElem {
     pub method: String,
-    pub args:   Value,           // serde_json::Value — flexible
+    pub args: Value,
     pub result: Option<Value>,
-    pub error:  Option<String>,
+    pub error: Option<String>,
 }
 
 // ---------------------------------------------------------------------------
-// EthConnector
-// ---------------------------------------------------------------------------
-
-pub struct EthConnector {
-    primary: RpcClient<Http<Client>>,
-    second:  RpcClient<Http<Client>>,
-    limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
-}
-
-impl EthConnector {
-    pub fn new(primary_url: &str, second_url: &str) -> Self {
-        let primary = ClientBuilder::default()
-            .http(primary_url.parse().expect("invalid primary URL"));
-        let second = ClientBuilder::default()
-            .http(second_url.parse().expect("invalid second URL"));
-
-        let quota = Quota::per_minute(nonzero!(200u32))
-            .allow_burst(nonzero!(10u32));
-
-        Self {
-            primary,
-            second,
-            limiter: Arc::new(RateLimiter::direct(quota)),
-        }
-    }
-}
-
-// ---------------------------------------------------------------------------
-// call_ctx
+// ConnectorError
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, thiserror::Error)]
@@ -61,69 +30,152 @@ pub enum ConnectorError {
     RateLimited,
     #[error("rpc error: {0}")]
     Rpc(String),
-    #[error("context cancelled")]
-    ContextCancelled,
 }
 
+// ---------------------------------------------------------------------------
+// EthConnector
+// ---------------------------------------------------------------------------
+
+pub struct EthConnector {
+    primary: RpcClient,
+    secondary: RpcClient,
+    limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
+}
 impl EthConnector {
-    pub async fn call_ctx(
-        &self,
-        ctx: CancellationToken,
-        calls: &mut Vec<BatchElem>,
-    ) -> Result<(), ConnectorError> {
-        self.limiter.until_ready().await;
+    // -----------------------------------------------------------------------
+    // Core (Existing)
+    // -----------------------------------------------------------------------
+    pub fn new(primary_url: &str, secondary_url: &str) -> Self {
+        let primary = ClientBuilder::default()
+            .http(primary_url.parse().expect("invalid primary URL"));
+        
+        let secondary = ClientBuilder::default()
+            .http(secondary_url.parse().expect("invalid secondary URL"));
 
-        // Tentative primaire
-        let primary_result = tokio::select! {
-            res = Self::dispatch_batch(&self.primary, calls) => res,
-            _ = ctx.cancelled() => return Err(ConnectorError::ContextCancelled),
-        };
+        let quota = Quota::per_minute(nonzero!(200u32)).allow_burst(nonzero!(10u32));
 
-        if primary_result.is_ok() {
-            return primary_result;
-        }
-
-        if ctx.is_cancelled() {
-            return Err(ConnectorError::ContextCancelled);
-        }
-
-        // Fallback secondaire
-        tokio::select! {
-            res = Self::dispatch_batch(&self.second, calls) => res,
-            _ = ctx.cancelled() => Err(ConnectorError::ContextCancelled),
+        Self {
+            primary,
+            secondary,
+            limiter: Arc::new(RateLimiter::direct(quota)),
         }
     }
 
-    async fn dispatch_batch(
-        client: &RpcClient<Http<Client>>,
-        calls: &mut Vec<BatchElem>,
-    ) -> Result<(), ConnectorError> {
-        let mut batch = client.new_batch();
+    pub async fn call_single(
+        &self,
+        method: &str,
+        args: &Value,
+    ) -> Result<Value, ConnectorError> {
+        self.limiter.until_ready().await;
+        let primary_res = Self::dispatch_single(&self.primary, method, args).await;
+        if primary_res.is_ok() { return primary_res; }
+        Self::dispatch_single(&self.secondary, method, args).await
+    }
 
-        // On enregistre chaque call dans le batch et on garde les futures
-        let futs: Vec<_> = calls
-            .iter()
-            .map(|elem| {
-                batch.add_call::<Value, Value>(
-                    &elem.method,
-                    &elem.args,
-                )
-                // add_call retourne un JoinHandle-like (Waiter<Value>)
-                .expect("failed to add call to batch")
-            })
-            .collect();
+    async fn dispatch_single(
+        client: &RpcClient,
+        method: &str,
+        args: &Value,
+    ) -> Result<Value, ConnectorError> {
+        client
+            .request(method.to_string(), args.clone())
+            .await
+            .map_err(|e| ConnectorError::Rpc(e.to_string()))
+    }
 
-        // Envoie le batch HTTP en une seule requête
-        batch.send().await.map_err(|e| ConnectorError::Rpc(e.to_string()))?;
+    pub async fn call_batch(&self, elems: &mut [BatchElem]) -> Result<(), ConnectorError> {
+        for _ in elems.iter() { self.limiter.until_ready().await; }
 
-        // Résout chaque future et réécrit BatchElem
-        for (elem, fut) in calls.iter_mut().zip(futs) {
-            match fut.await {
-                Ok(val)  => elem.result = Some(val),
-                Err(e)   => elem.error  = Some(e.to_string()),
+        let primary_futs = elems.iter()
+            .map(|e| Self::dispatch_single(&self.primary, &e.method, &e.args))
+            .collect::<Vec<_>>();
+        let primary_results = futures::future::join_all(primary_futs).await;
+
+        let mut failed = Vec::new();
+        for (i, res) in primary_results.into_iter().enumerate() {
+            match res {
+                Ok(val) => elems[i].result = Some(val),
+                Err(_)  => failed.push(i),
             }
         }
 
+        if !failed.is_empty() {
+            for _ in failed.iter() { self.limiter.until_ready().await; }
+            let secondary_futs = failed.iter()
+                .map(|&i| Self::dispatch_single(&self.secondary, &elems[i].method, &elems[i].args))
+                .collect::<Vec<_>>();
+            let secondary_results = futures::future::join_all(secondary_futs).await;
+
+            for (j, &i) in failed.iter().enumerate() {
+                match &secondary_results[j] {
+                    Ok(val)  => elems[i].result = Some(val.clone()),
+                    Err(err) => elems[i].error = Some(err.to_string()),
+                }
+            }
+        }
         Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // High-Level eth_call API
+    // -----------------------------------------------------------------------
+
+    /// Single eth_call (falls back to secondary automatically)
+    pub async fn eth_call(
+        &self,
+        to: &str,
+        calldata: &str,
+        block: &str,
+    ) -> Result<Value, ConnectorError> {
+        let args = json!([{ "to": to, "data": calldata }, block]);
+        self.call_single("eth_call", &args).await
+    }
+
+    /// Single eth_call with a `from` address
+    pub async fn eth_call_from(
+        &self,
+        from: &str,
+        to: &str,
+        calldata: &str,
+        block: &str,
+    ) -> Result<Value, ConnectorError> {
+        let args = json!([{ "from": from, "to": to, "data": calldata }, block]);
+        self.call_single("eth_call", &args).await
+    }
+
+    /// Batch eth_call for multiple contracts/same or different calldata
+    pub async fn eth_call_batch(
+        &self,
+        calls: &[(/* to */ &str, /* calldata */ &str)],
+        block: &str,
+    ) -> Vec<Result<Value, ConnectorError>> {
+        
+        // 1. Build BatchElems from the (to, calldata) tuples
+        let mut elems: Vec<BatchElem> = calls
+            .iter()
+            .map(|(to, data)| BatchElem {
+                method: "eth_call".into(),
+                args: json!([{ "to": to, "data": data }, block]),
+                result: None,
+                error: None,
+            })
+            .collect();
+
+        // 2. Dispatch using the existing batch mechanism
+        // If the whole batch dispatcher fails (unlikely), map to errors
+        if let Err(e) = self.call_batch(&mut elems).await {
+            return vec![Err(e); elems.len()];
+        }
+
+        // 3. Convert BatchElem results back into a Vec<Result>
+        elems
+            .into_iter()
+            .map(|e| match (e.result, e.error) {
+                (Some(val), _) => Ok(val),
+                (None, Some(err)) => Err(ConnectorError::Rpc(err)),
+                // Should never happen if call_batch works correctly
+                _ => Err(ConnectorError::Rpc("Unknown batch state".into())),
+            })
+            .collect()
     }
 }
