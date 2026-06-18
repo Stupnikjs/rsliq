@@ -122,12 +122,12 @@ impl PartialOrd for BorrowPosition {
 
 
 impl MarketCache {
-
     pub fn ids(&self) -> Vec<FixedBytes<32>> {
         self.markets
             .read()
             .unwrap()
             .iter()
+            .filter(|(_, market)| !market.read().unwrap().canceled)
             // On prend le premier élément du tuple (la clé), et on ignore le second avec `_`
             .map(|(&id_bytes, _market)| FixedBytes::from(id_bytes)) 
             .collect()
