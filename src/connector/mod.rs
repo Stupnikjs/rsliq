@@ -1,7 +1,7 @@
 use alloy::primitives::{Address, Bytes, U256};
 use alloy::providers::{DynProvider, ProviderBuilder, Provider};
 use alloy::rpc::types::TransactionRequest;
-use alloy::sol_types::{SolCall, SolValue};  // ← LES DEUX
+use alloy::sol_types::SolCall;
 use alloy::sol;
 
 sol! {
@@ -28,15 +28,16 @@ impl Rpc {
         owner: Address,
     ) -> Result<U256, Box<dyn std::error::Error + Send + Sync>> {
         let call = balanceOfCall { owner };
-        let calldata = call.abi_encode();  // SolCall
+        let calldata = call.abi_encode();
 
         let tx = TransactionRequest::default()
             .to(token)
             .input(calldata.into());
 
         let raw: Bytes = self.provider.call(tx).await?;
-        
-        let result = nameCall::abi_decode_returns(&raw)?;  // SolValue
+
+        // ✅ was nameCall — must match the function being called
+        let result = balanceOfCall::abi_decode_returns(&raw)?;
         Ok(result)
     }
 
@@ -45,15 +46,15 @@ impl Rpc {
         token: Address,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let call = nameCall {};
-        let calldata = call.abi_encode();  // SolCall
+        let calldata = call.abi_encode();
 
         let tx = TransactionRequest::default()
             .to(token)
             .input(calldata.into());
 
         let raw: Bytes = self.provider.call(tx).await?;
-        
-        let result = nameCall::abi_decode_returns(&raw)?;   // SolValue
+
+        let result = nameCall::abi_decode_returns(&raw)?;
         Ok(result)
     }
 }
