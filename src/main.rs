@@ -16,10 +16,8 @@ mod connector;
 
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let provider = ProviderBuilder::new()
-        .connect_http("https://lb.drpc.live/base/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv".parse()?);
-    let block = provider.get_block_number().await?;
-    println!("block number = {}", block);    
-    Ok(())
+async fn main() {
+    let primary = "https://eth.drpc.org";
+    let secondary = "https://go.getblock.us/27eb23f40b964c9bb71b62f721e594e7";
 }
+
