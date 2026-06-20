@@ -83,4 +83,4 @@ pub fn decode_string(data: &[u8]) -> Result<String, Box<dyn std::error::Error>> 
     let len    = decode_uint(&data[offset..offset + 32]).to::<usize>();
     let bytes  = &data[offset + 32..offset + 32 + len];
     Ok(String::from_utf8(bytes.to_vec())?)
-}    
+}
