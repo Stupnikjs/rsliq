@@ -9,10 +9,12 @@ pub fn selector(signature: &str) -> [u8; 4] {
     sel
 }
 
-pub fn encode_calldata(sel: [u8; 4], args: &impl SolValue) -> Bytes {
-    let mut data = Vec::with_capacity(4 + args.abi_encoded_size());
+
+
+pub fn encode_calldata(sel: [u8; 4], args: &[u8]) -> Bytes {
+    let mut data = Vec::with_capacity(4 + args.len());
     data.extend_from_slice(&sel);
-    data.extend(args.abi_encode());
+    data.extend_from_slice(args);
     data.into()
 }
 
