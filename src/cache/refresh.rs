@@ -1,4 +1,5 @@
-
+use crate::api::fetch_all_positions; 
+use crate::api::positions::position_item_to_borrow_pos; 
 use crate::cache::MarketCache; 
 use crate::onchain::calls::{oracle_call, market_call}; 
 use crate::connector::Connector; 
@@ -6,8 +7,28 @@ use alloy_primitives::{Address,FixedBytes};
 use alloy::providers::Provider;
 
 
-   impl MarketCache {
-    pub async fn onchain_oracle_refresh(
+
+
+impl MarketCache {
+    pub async fn api_refresh(&self, chain_id: u32) {
+        for id in self.ids() {
+            if let Ok(positions) = fetch_all_positions(id, chain_id).await {
+                if positions.len() > 5 {
+                     let borrow_pos_arr: Vec<_> = positions
+                    .into_iter()
+                    .map(|p| position_item_to_borrow_pos(p, id))
+                    .filter(|p| p.borrow_assets_usd > 1)
+                    .collect();
+
+                self.update(id, |m| {
+                    m.positions = borrow_pos_arr;
+                });
+                }
+               
+            }
+        }
+    }
+     pub async fn onchain_oracle_refresh(
         &self,
         conn: &Connector<impl Provider>,
         market_id: FixedBytes<32>,

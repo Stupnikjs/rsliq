@@ -1,6 +1,8 @@
 #![allow(dead_code, unused_variables, unused_imports)]
-mod api_refresh;
-mod onchain_refresh;
+mod refresh;
+mod positions;
+
+
 
 use alloy_primitives::{Address, U256, FixedBytes};
 use std::collections::HashMap;
@@ -8,6 +10,7 @@ use std::sync::{Arc, RwLock};
 use crate::morpho::types::MarketParam;
 use crate::api::market::{fetch_all_market_by_chainid}; 
 use crate::api::positions::{fetch_all_positions, position_item_to_borrow_pos}; 
+use crate::cache::positions::{BorrowPosition}; 
 use futures::stream::{self, StreamExt};
 
 
@@ -120,71 +123,3 @@ where
 
 
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct BorrowPosition {
-    pub market_id: FixedBytes<32>,
-    pub address: Address,
-    pub borrow_shares: U256,
-    pub borrow_assets_usd: U256,
-    pub collateral_assets: U256,
-    pub cached_hf: U256, // Jamais nil, 0 par défaut si non calculé
-}
-
-// Pour que le cache trie automatiquement du pire au meilleur Health Factor (HF)
-impl Ord for BorrowPosition {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        // On trie par HF inversé (le plus petit HF a la priorité absolue)
-        other.cached_hf.cmp(&self.cached_hf)
-    }
-}
-
-impl PartialOrd for BorrowPosition {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-
-
-impl MarketCache {
-    
-}
-
-
-
-
-
-const CONCURRENCY: usize = 200;
-
-pub async  fn init_cache() -> anyhow::Result<MarketCache> {
-    let chain_id = 8453u32;
-    let markets = fetch_all_market_by_chainid(chain_id).await?;
-    let cache = MarketCache::new(&markets);
-    println!("markets len {}", cache.ids().len()); 
-    stream::iter(cache.ids())
-        .map(|id| async move {
-            (id, fetch_all_positions(id, chain_id).await)
-        })
-        .buffer_unordered(CONCURRENCY)
-        .for_each(|(id, result)| {
-            match result {
-                Ok(items) => {
-                    if items.is_empty() || items.len() < 5 {
-                        cache.update(id, |m| m.canceled = true);          
-                    } else {
-                        let positions: Vec<_> = items
-                        .into_iter()
-                        .map(|item| position_item_to_borrow_pos(item, id))
-                        .collect();
-                    cache.update(id, |m| m.positions = positions);
-                    }
-                  
-                } 
-                Err(_err) => {}
-            }
-            futures::future::ready(())
-        })
-        .await;
-
-    Ok(cache)
-}

@@ -18,6 +18,8 @@ mod api;
 mod cache; 
 mod connector;
 mod onchain;
+mod config;
+pub mod swap;
 
 
 use std::sync::Arc;
@@ -28,7 +30,7 @@ use tokio::time::{sleep, Duration};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let drpc_mainnet = "https://lb.drpc.live/ethereum/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv"; 
+    let conf = config::LoadBaseConfig(8453); 
     let connector = Arc::new(connector::new(drpc_mainnet)?);
     let markets = fetch_all_market_by_chainid(1).await?;
     let cache = Arc::new(cache::MarketCache::new(&markets));
@@ -36,16 +38,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     cache.api_refresh(1).await;
 
     for id in cache.ids() {
+
         let conn = Arc::clone(&connector);
         let cache = Arc::clone(&cache);
+
+        // en plus il faudrais l'api routine refresh 
         tokio::spawn(async move {
+            let mut counter = 0; 
             loop {
-                if let Err(e) = cache.onchain_oracle_refresh(&conn, id).await {
-                    println!("error on market {:?}: {}", id, e);
+                if counter % 10 == 0 {
+                     if let Err(e) = cache.onchain_market_refresh(&conn, morpho_addr).await {
+                    continue; 
                 }
-                 // let interval = cache.get_refresh_interval(id).unwrap_or(12);
+                
+                }
+                if let Err(e) = cache.onchain_oracle_refresh(&conn, id).await {
+                    continue; 
+                }
+                
+
+                // let interval = cache.get_refresh_interval(id).unwrap_or(12);
                 // sleep(Duration::from_secs(interval)).await;
+                  
+                // interval = cache.check_liquidation 
                 sleep(Duration::from_secs(12)).await; // ~1 block Base
+                counter+=1; 
             }
         });
     }
