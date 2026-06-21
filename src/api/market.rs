@@ -37,7 +37,7 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
     .as_ref()
     .ok_or_else(|| anyhow::anyhow!("no collasset found"))?; 
     let collateral_token = Address::from_str(&collateral_asset.address)?; 
-    let oracle = Address::from_str(&item.oracle_address)?;
+    let oracle = Address::from_str(&item.oracle_address.strip_prefix("0x").unwrap())?;
     let irm  = Address::from_str(&item.irm)?;
 
     // 3. Convertir le LLTV (ton type Number) en U256

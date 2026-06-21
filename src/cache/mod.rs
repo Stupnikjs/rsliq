@@ -1,4 +1,6 @@
 #![allow(dead_code, unused_variables, unused_imports)]
+mod api_refresh;
+mod onchain_refresh;
 
 use alloy_primitives::{Address, U256, FixedBytes};
 use std::collections::HashMap;
@@ -11,10 +13,6 @@ use futures::stream::{self, StreamExt};
 
 pub type MarketId = FixedBytes<32>;
 
-pub struct Oracle {
-    pub price: U256,
-    pub address: Address,
-}
 
 #[derive(Default, Clone)]
 pub struct MarketStats {

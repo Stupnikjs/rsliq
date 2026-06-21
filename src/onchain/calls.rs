@@ -25,9 +25,9 @@ type MarketTuple = (
     sol_data::Uint<128>,
 );
 
-pub fn decode_market_stats(data: &[u8]) -> Result<MarketStatsCall, Box<dyn std::error::Error>> {
+pub fn decode_market_stats(data: &[u8]) -> Result<MarketStatsCall, anyhow::Error> {
     if data.len() < 192 {
-        return Err("response too short".into());
+        return Err(anyhow::anyhow!("response too short"));
     }
 
     // chaque slot = 32 bytes, la valeur uint128 est dans les 16 bytes de droite
@@ -47,14 +47,14 @@ pub fn decode_market_stats(data: &[u8]) -> Result<MarketStatsCall, Box<dyn std::
 }
 
 
-pub fn decode_oracle_price(data: &[u8])-> Result<U256, Box<dyn std::error::Error>> {
-    if data.len() > 32 {
-        return Err("response too short".into());
+pub fn decode_oracle_price(data: &[u8])-> Result<U256,anyhow::Error> {
+    if data.len() < 32 {
+        return Err(anyhow::anyhow!("response too short"));
     }
     Ok(U256::from_be_slice(&data))
 }
 
-pub async  fn market_call(conn: &Connector<impl Provider>, morpho_addr:Address, market_id: &[u8] ) -> Result<MarketStatsCall, Box<dyn std::error::Error>>{
+pub async  fn market_call(conn: &Connector<impl Provider>, morpho_addr:Address, market_id: &[u8] ) -> Result<MarketStatsCall, anyhow::Error>{
     let selector = selector("market(bytes32)"); 
     let calldata = encode_calldata(selector, market_id); 
     let resp = conn.call_raw(morpho_addr, calldata).await?; 
@@ -63,8 +63,8 @@ pub async  fn market_call(conn: &Connector<impl Provider>, morpho_addr:Address, 
 
 
 
-pub async  fn oracle_call(conn: &Connector<impl Provider>, oracle_addr:Address) -> Result<U256, Box<dyn std::error::Error>>{
-    let selector = selector("market(bytes32)"); 
+pub async  fn oracle_call(conn: &Connector<impl Provider>, oracle_addr:Address) -> Result<U256, anyhow::Error>{
+    let selector = selector("price()"); 
     let calldata = encode_calldata(selector, &[]); 
     let resp = conn.call_raw(oracle_addr, calldata).await?; 
     decode_oracle_price(&resp)

@@ -2,12 +2,13 @@
 use alloy_primitives::{FixedBytes, U256, Address}; 
 use anyhow::Context;
 
-use hex; 
+use hex;
+use tokio::runtime::Id; 
 use std::str::FromStr;
 use crate::api::types::{PositionItem, PositionsResult};
-use crate::api::HttpClient;
+use crate::api::{HttpClient, positions};
 use crate::api::queries::positions_query;
-use crate::cache::BorrowPosition;
+use crate::cache::{BorrowPosition, MarketCache};
 
 pub async fn fetch_all_positions(
     market_id: FixedBytes<32>,
@@ -67,3 +68,5 @@ pub fn position_item_to_borrow_pos(
         cached_hf: U256::ZERO, // 0 par défaut comme demandé, le calcul se fera après
     }
 }
+
+

@@ -6,7 +6,7 @@ use crate::api::market::{self, fetch_all_market_by_chainid};
 use crate::morpho::types::MarketParam;
 use crate::connector::Connector; 
 use crate::cache::{MarketStats, init_cache};
-use crate::onchain::calls::{market_call, MarketStatsCall}; 
+use crate::onchain::calls::{MarketStatsCall, market_call, oracle_call}; 
 use alloy::providers::{ProviderBuilder, Provider};
 use alloy::network::AnyNetwork;
 use alloy_primitives::{Address, address};
@@ -20,25 +20,37 @@ mod connector;
 mod onchain;
 
 
+use std::sync::Arc;
+use tokio::time::{sleep, Duration};
+
+
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let drpc_mainnet = "https://lb.drpc.live/ethereum/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv"; 
-    let connector = connector::new(drpc_mainnet)?; 
+    let connector = Arc::new(connector::new(drpc_mainnet)?);
     let markets = fetch_all_market_by_chainid(1).await?;
-    println!("len markets {}", markets.len()); 
-    for m in markets.iter().take(3) {
-    let market_stat = market_call_wrap(&connector, &m.id.0).await? ; 
-    println!("{:?}", market_stat) ;
-}
+    let cache = Arc::new(cache::MarketCache::new(&markets));
+
+    cache.api_refresh(1).await;
+
+    for id in cache.ids() {
+        let conn = Arc::clone(&connector);
+        let cache = Arc::clone(&cache);
+        tokio::spawn(async move {
+            loop {
+                if let Err(e) = cache.onchain_oracle_refresh(&conn, id).await {
+                    println!("error on market {:?}: {}", id, e);
+                }
+                 // let interval = cache.get_refresh_interval(id).unwrap_or(12);
+                // sleep(Duration::from_secs(interval)).await;
+                sleep(Duration::from_secs(12)).await; // ~1 block Base
+            }
+        });
+    }
+
+    // garde le main en vie
+    tokio::signal::ctrl_c().await?;
     Ok(())
-}
-
-
-
-async fn market_call_wrap(connector:&Connector<impl Provider>, market_id_bytes: &[u8]) ->  Result<MarketStatsCall, Box<dyn std::error::Error>> {
-    let morpho = address!("0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb");
-        
-    let market = market_call(connector, morpho, &market_id_bytes).await
-        .map_err(|e| format!("fetch_market error: {}", e))?;
-    Ok(market)
 }
