@@ -84,19 +84,24 @@ impl MarketCache {
         .map(|m| (*m.read().unwrap().params).clone())
 } 
 
-    pub fn update<F>(&self, id: MarketId, f: F) -> bool
-    where
-        F: FnOnce(&mut Market),
-    {
+    pub fn update<F, R>(&self, id: MarketId, f: F) -> Option<R>
+where
+    F: FnOnce(&mut Market) -> R,
+{
+    // 1. Lock la HashMap juste le temps de récupérer l'Arc, puis relâche immédiatement
+    let market_arc = {
         let guard = self.markets.read().unwrap();
-        match guard.get(&id) {
-            Some(market) => {
-                f(&mut market.write().unwrap());
-                true
-            }
-            None => false,
-        }
-    }
+        guard.get(&id)?.clone()
+    };
+
+    // 2. Lock le Market séparément — gère le poisoning sans paniquer
+    let mut market = match market_arc.write() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(), // récupère quand même les données
+    };
+
+    Some(f(&mut market))
+}
 
     pub fn snapshot(&self, id: MarketId) -> Option<MarketSnapshot>
     where
