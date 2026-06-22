@@ -5,7 +5,7 @@ use std::str::FromStr;
 use crate::api::market::{self, fetch_all_market_by_chainid};
 use crate::morpho::types::MarketParam;
 use crate::connector::Connector; 
-use crate::cache::{MarketStats, init_cache};
+use crate::cache::{MarketStats};
 use crate::onchain::calls::{MarketStatsCall, market_call, oracle_call}; 
 use alloy::providers::{ProviderBuilder, Provider};
 use alloy::network::AnyNetwork;
@@ -27,10 +27,45 @@ use tokio::time::{sleep, Duration};
 
 
 
+/*
+Runner struct {
+    conf config 
+    cache MarketCache
+    conn Connector
+}
+
+match chain_id {
+
+}
+config = load_base_config()
+build runner.new(config) // pass config 
+
+runner.init() 
+- api call 
+- onchain call 
+- quote 
+
+runner.lauch()
+- spwan api refresh 
+- spawn market refresh 
+
+*/
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let conf = config::LoadBaseConfig(8453); 
+    let conf; 
+    let chain = std::env::args().nth(1).unwrap_or_else(|| {
+    eprintln!("usage: rsliq <chain>");
+    std::process::exit(1);
+    });
+    match chain.as_str() {
+    "base"    => { conf = load_base_config() }
+    _         => panic!("unknown chain: {}", chain),
+    }
+    let runner = Runner::new(conf); 
+    runner.init(); 
+    runner.run();
     let connector = Arc::new(connector::new(drpc_mainnet)?);
     let markets = fetch_all_market_by_chainid(1).await?;
     let cache = Arc::new(cache::MarketCache::new(&markets));
