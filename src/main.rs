@@ -36,13 +36,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cache = Arc::new(cache::MarketCache::new(&markets));
 
     cache.api_refresh(1).await;
-
+    api_refresh_spawn(&cache)
     for id in cache.ids() {
 
         let conn = Arc::clone(&connector);
         let cache = Arc::clone(&cache);
 
         // en plus il faudrais l'api routine refresh 
+        // 
         tokio::spawn(async move {
             let mut counter = 0; 
             loop {
