@@ -1,3 +1,4 @@
+use std::time::Duration;
 use crate::api::fetch_all_positions; 
 use crate::api::positions::position_item_to_borrow_pos; 
 use crate::cache::MarketCache; 
@@ -60,14 +61,14 @@ impl MarketCache {
         Ok(())
     }
 
-        pub fn spawn_api_refresh(&self, refresh_freqency_sec:u32, chain_id:u32 ) {
+    pub async fn  spawn_api_refresh(&self, refresh_frequency_sec:u64, chain_id:u32 ) {
     let cache = self.clone(); // MarketCache doit être Clone (wrap Arc)
     tokio::spawn(async move {
         loop {
-            cache.api_refresh().await;
+            cache.api_refresh(chain_id).await;
             tokio::time::sleep(Duration::from_secs(refresh_frequency_sec)).await;
         }
     });
-}
+
                 }
 }
