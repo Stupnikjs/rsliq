@@ -60,10 +60,14 @@ impl MarketCache {
         Ok(())
     }
 
-    pub async swap_refresh_api(&self) {
+        pub fn spawn_api_refresh(&self, refresh_freqency_sec:u32, chain_id:u32 ) {
+    let cache = self.clone(); // MarketCache doit être Clone (wrap Arc)
     tokio::spawn(async move {
-            
-            }
-        });
+        loop {
+            cache.api_refresh().await;
+            tokio::time::sleep(Duration::from_secs(refresh_frequency_sec)).await;
+        }
+    });
+}
                 }
 }
