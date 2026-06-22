@@ -3,6 +3,9 @@ use crate::swap;
 use std::env::var;
 use std::str::FromStr;
 
+mod address; 
+
+
 pub struct Config {
     pub chain_id: u32,
     pub main_rpc: String,
@@ -11,6 +14,7 @@ pub struct Config {
     pub liquidator_addr: Address,
     pub dexes: Vec<Box<dyn swap::Dex>>,
 }
+
 
 pub fn load_base_config(chain_id: u32) -> Config {
     dotenvy::dotenv().ok();
