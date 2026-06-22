@@ -59,4 +59,11 @@ impl MarketCache {
 
         Ok(())
     }
+
+    pub async swap_refresh_api(&self) {
+    tokio::spawn(async move {
+            
+            }
+        });
+                }
 }
