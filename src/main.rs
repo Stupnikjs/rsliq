@@ -34,9 +34,10 @@ Runner struct {
     conn Connector
 }
 
-match chain_id {
 
-}
+
+dans /runner/ 
+
 config = load_base_config()
 build runner.new(config) // pass config 
 
