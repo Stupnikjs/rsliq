@@ -1,60 +1,46 @@
-// ethcaller.rs
+mod rate_limiter;
+use std::sync::Arc;
 use alloy::{
-    primitives::{Address, Bytes},
-    providers::{Provider, ProviderBuilder},
-    rpc::types::TransactionRequest,
-    transports::{RpcError, TransportErrorKind},
+    network::{Ethereum, TransactionBuilder}, primitives::{Address, Bytes}, providers::{Provider, ProviderBuilder, RootProvider, WsConnect}, rpc::types::{Filter, Log, TransactionRequest}, transports::{BoxTransport, RpcError, TransportErrorKind},
 };
-use futures_util::StreamExt;
 
+use futures_util::{Stream, StreamExt};
 use crate::connector::rate_limiter::RateLimiter;
 
-pub struct EthCaller<P> {
-    provider: P,
+pub struct Connector {
+    http: Arc<dyn Provider>,
+    ws: RootProvider<Ethereum>,
     rate_limiter: RateLimiter,
 }
 
-pub fn new_caller(rpc_url: String) -> Result<EthCaller<impl Provider>, Box<dyn std::error::Error>> {
-    let provider = ProviderBuilder::new().connect_http(rpc_url.parse()?);
-    Ok(EthCaller { provider, rate_limiter: RateLimiter::new(200) })
+pub async fn new(
+    rpc_url: String,
+    ws_url: String,
+) -> Result<Connector, Box<dyn std::error::Error>> {
+    let http = Arc::new(ProviderBuilder::new().connect_http(rpc_url.parse()?));
+    let ws = ProviderBuilder::new()
+        .disable_recommended_fillers()
+        .connect_ws(WsConnect::new(ws_url))
+        .await?; 
+    Ok(Connector { http, ws, rate_limiter: RateLimiter::new(200) })
 }
 
-impl<P: Provider> EthCaller<P> {
-    pub async fn call_raw(&self, to: Address, data: Bytes) -> Result<Bytes, RpcError<TransportErrorKind>> {
+impl Connector {
+    pub async fn call_raw(
+        &self,
+        to: Address,
+        data: Bytes,
+    ) -> Result<Bytes, RpcError<TransportErrorKind>> {
         self.rate_limiter.acquire().await;
         let tx = TransactionRequest::default().with_to(to).with_input(data);
-        self.provider.call(tx).await.map_err(|e| e.into())
+        self.http.call(tx).await.map_err(|e| e.into())
     }
-}
 
-
-// wssubscriber.rs
-use alloy::{
-    providers::{Provider, ProviderBuilder, WsConnect},
-    pubsub::PubSubFrontend,
-    rpc::types::Header,
-};
-
-
-pub struct WsSubscriber<P> {
-    provider: P,
-}
-
-pub async fn new_subscriber(ws_url: String) -> Result<WsSubscriber<impl Provider<PubSubFrontend>>, Box<dyn std::error::Error>> {
-    let provider = ProviderBuilder::new().connect_ws(WsConnect::new(ws_url)).await?;
-    Ok(WsSubscriber { provider })
-}
-
-impl<P: Provider<PubSubFrontend>> WsSubscriber<P> {
-    pub async fn subscribe_blocks<F>(&self, mut on_block: F) -> Result<(), Box<dyn std::error::Error>>
-    where
-        F: FnMut(Header),
-    {
-        let sub = self.provider.subscribe_blocks().await?;
-        let mut stream = sub.into_stream();
-        while let Some(block) = stream.next().await {
-            on_block(block);
-        }
-        Ok(())
+    pub async fn subscribe_logs(
+        &self,
+        filter: Filter,
+    ) -> Result<impl Stream<Item = Log>, Box<dyn std::error::Error>> {
+        let sub = self.ws.subscribe_logs(&filter.clone()).await?;
+        Ok(sub.into_stream())
     }
 }

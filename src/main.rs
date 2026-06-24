@@ -7,7 +7,7 @@
 mod morpho;
 mod api;
 mod cache; 
-mod connector;
+pub mod connector;
 mod onchain;
 mod config;
 mod runner; 
