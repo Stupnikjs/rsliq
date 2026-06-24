@@ -55,6 +55,10 @@ impl Runner{
             }
         });
 
+
+        // for all market launch market routines
+        // for id in cache.ids() 
+        // spawn markets 
         // Task 2 : écoute les events Morpho et met à jour le cache
         let cache_ws = Arc::clone(&self.cache);
 
@@ -66,6 +70,10 @@ impl Runner{
     // self.connector.subscribe(self.config.morpho_addr, self.cache.process_log).await
     Ok()
 }
+
+
+    pub async fn market_spawn() 
+    gère la détection du hf le tri 
     */
 
 
