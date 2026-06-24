@@ -26,15 +26,15 @@ use crate::runner::Runner;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let conf; 
+
     let chain = std::env::args().nth(1).unwrap_or_else(|| {
     eprintln!("usage: rsliq <chain>");
     std::process::exit(1);
     });
     let chainint:u64 = chain.parse()?;
-    let runner: Runner<impl Provider> = runner::Runner::new(8453)?; 
-    runner.init()?; 
-    runner.run();
+    let mut runner  = runner::Runner::new(8453).await.expect("failed runner new func"); 
+    runner.init().await.expect(""); 
+    runner.run().await.expect(""); 
     // garde le main en vie
     tokio::signal::ctrl_c().await?;
     Ok(())

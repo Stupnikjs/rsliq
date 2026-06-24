@@ -4,7 +4,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt;
 
-pub mod positions;
+pub mod pos;
 pub mod queries;
 pub  mod types;
 pub mod number; 
@@ -14,7 +14,7 @@ pub mod market;
 const MORPHO_GRAPHQL_URL: &str = "https://api.morpho.org/graphql";
 
 
-pub use positions::fetch_all_positions;
+pub use pos::fetch_all_positions;
 pub use market::fetch_all_market;
 
 

@@ -21,9 +21,9 @@ pub struct Config {
 pub fn load_base_config() -> Config {
     dotenvy::dotenv().ok(); 
     let main_rpc = var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set");
-    let ws_rpc:String = var("BASE_WS_ACLH").expect("BASE_WS_ALCH not set"); 
+    let ws_rpc:String = var("BASE_WS_ALCH").expect("BASE_WS_ALCH not set"); 
     Config {
-        chain_id: 8543,
+        chain_id: 8453,
         main_rpc: main_rpc,
         second_rpc: String::new(),
         ws_rpc: ws_rpc,

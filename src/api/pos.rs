@@ -6,9 +6,9 @@ use hex;
 use tokio::runtime::Id; 
 use std::str::FromStr;
 use crate::api::types::{PositionItem, PositionsResult};
-use crate::api::{HttpClient, positions};
+use crate::api::{HttpClient, pos};
 use crate::api::queries::positions_query;
-use crate::cache::{BorrowPosition, MarketCache};
+use crate::cache::{positions::BorrowPosition, MarketCache};
 
 pub async fn fetch_all_positions(
     market_id: FixedBytes<32>,

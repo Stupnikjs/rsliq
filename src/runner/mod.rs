@@ -14,13 +14,13 @@ use crate::connector::{self, Connector};
 use crate::cache::MarketCache;
 use crate::api::market::fetch_all_market_by_chainid;
 
-pub struct Runner <H,W>{
+pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
-    connector: Connector<H,W>,
+    connector: Connector,
 } 
 
-impl<H: Provider, W: Provider<Ethereum>> Runner<H, W>{
+impl Runner{
     pub async fn new(chainid: u64) -> Result<Self, Box<dyn std::error::Error>> {
         let config = match chainid {
             8453 => load_base_config(),
@@ -40,7 +40,7 @@ impl<H: Provider, W: Provider<Ethereum>> Runner<H, W>{
         // full onchain refresh
         // full quote 
 
-        _ = self.subscribe().await?; 
+        // _ = self.subscribe().await?; 
         Ok(())
     }
 
@@ -61,32 +61,12 @@ impl<H: Provider, W: Provider<Ethereum>> Runner<H, W>{
         Ok(())
     }
 
-
+/* 
   pub async fn subscribe(&self) -> Result<impl Stream<Item = Log>, Box<dyn std::error::Error>> {
-    let process_log = some (); 
-    self.connector.subscribe(self.config.morpho_addr, process_log).await
+    // self.connector.subscribe(self.config.morpho_addr, self.cache.process_log).await
+    Ok()
 }
+    */
 
-pub async fn listen(&self, mut stream: impl Stream<Item = Log> + Unpin) -> Result<(), Box<dyn std::error::Error>> {
-    while let Some(log) = stream.next().await {
-        let topic0 = log.topics()[0];
-        match topic0 {
-            x if x == keccak256("Supply(bytes32,address,address,uint256,uint256)")
-              || x == keccak256("Borrow(bytes32,address,address,address,uint256,uint256)")
-              || x == keccak256("Repay(bytes32,address,address,uint256,uint256)") => {
-                let on_behalf = Address::from_slice(&log.topics()[2].as_slice()[12..]);
-                self.cache.update_position(on_behalf);
-            }
-            x if x == keccak256("Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)") => {
-                let borrower = Address::from_slice(&log.topics()[2].as_slice()[12..]);
-                self.cache.invalidate(borrower);
-            }
-            x if x == keccak256("AccrueInterest(bytes32,uint256,uint256,uint256)") => {
-                self.cache.accrue_interest();
-            }
-            _ => {}
-        }
-    }
-    Ok(())
-}
+
     }

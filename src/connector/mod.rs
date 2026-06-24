@@ -1,95 +1,51 @@
 use alloy::network::Ethereum;
-use alloy::providers::{Provider, ProviderBuilder};
-use alloy::pubsub::PubSubFrontend;
-use alloy::transports::ws::WsConnect;
+use alloy::providers::{Provider, ProviderBuilder, RootProvider};
+use alloy::transports::{BoxTransport, ws::WsConnect};
 use alloy::rpc::types::{Filter, BlockNumberOrTag, Log};
-use alloy::primitives::{Address, Bytes, keccak256, U256};
+use alloy::primitives::{Address, Bytes};
 use futures::StreamExt;
 
-pub struct Connector<H, W> {
-    pub http: H,
-    pub ws: W,
+pub struct Connector {
+    pub http: RootProvider<Ethereum>,
+    pub ws: RootProvider<Ethereum>,
 }
 
-impl<H: Provider, W: Provider<Ethereum>> Connector<H, W> {
-    pub fn new(http: H, ws: W) -> Self {
-        Self { http, ws }
-    }
-
-    // HTTP — eth_call brut
-    pub async fn call_raw(
-        &self,
-        to: Address,
-        data: Bytes,
-    ) -> Result<Bytes, Box<dyn std::error::Error>> {
+impl Connector {
+    pub async fn call_raw(&self, to: Address, data: Bytes) -> Result<Bytes, Box<dyn std::error::Error>> {
         let tx = alloy::rpc::types::TransactionRequest::default()
             .to(to)
             .input(data.into());
-
-        let result = self.http.call(tx).await?;
-        Ok(result)
+        Ok(self.http.call(tx).await?)
     }
 
-    // WS — subscribe aux logs
-    pub async fn subscribe<F>(
-        &self,
-        morpho_addr: Address,
-        mut on_log: F,
-    ) -> Result<(), Box<dyn std::error::Error>>
+    pub async fn subscribe<F>(&self, morpho_addr: Address, mut on_log: F) -> Result<(), Box<dyn std::error::Error>>
     where
         F: FnMut(Log),
-    {   
-        let filter = Filter::new().address(morpho_addr)
-        .from_block(BlockNumberOrTag::Latest)
-        .events([
-            "Supply(bytes32,address,address,uint256,uint256)",
-            "Borrow(bytes32,address,address,address,uint256,uint256)",
-            "Repay(bytes32,address,address,uint256,uint256)",
-            "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
-            "AccrueInterest(bytes32,uint256,uint256,uint256)",
-        ]);
-        let sub = self.ws.subscribe_logs(filter).await?;
+    {
+        let filter = Filter::new()
+            .address(morpho_addr)
+            .from_block(BlockNumberOrTag::Latest)
+            .events([
+                "Supply(bytes32,address,address,uint256,uint256)",
+                "Borrow(bytes32,address,address,address,uint256,uint256)",
+                "Repay(bytes32,address,address,uint256,uint256)",
+                "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
+                "AccrueInterest(bytes32,uint256,uint256,uint256)",
+            ]);
+        let sub = self.ws.subscribe_logs(&filter).await?;
         let mut stream = sub.into_stream();
-
         while let Some(log) = stream.next().await {
             on_log(log);
         }
-
-        Ok(())
-    }
-
-    // WS — subscribe aux blocs
-    pub async fn subscribe_blocks<F>(
-        &self,
-        mut on_block: F,
-    ) -> Result<(), Box<dyn std::error::Error>>
-    where
-        F: FnMut(alloy::rpc::types::Header),
-    {
-        let sub = self.ws.subscribe_blocks().await?;
-        let mut stream = sub.into_stream();
-
-        while let Some(block) = stream.next().await {
-            on_block(block);
-        }
-
         Ok(())
     }
 }
 
-pub async fn build(
-    http_url: &str,
-    ws_url: &str,
-) -> Result<
-    Connector<impl Provider, impl Provider<Ethereum>>,
-    Box<dyn std::error::Error>,
-> {
-    let http = ProviderBuilder::new()
-        .connect_http(http_url.parse()?);
-
+pub async fn build(http_url: &str, ws_url: &str) -> Result<Connector, Box<dyn std::error::Error>> {
+    let http = RootProvider::<Ethereum>::new_http(http_url.parse()?);
     let ws = ProviderBuilder::new()
+        .disable_recommended_fillers()
         .connect_ws(WsConnect::new(ws_url))
         .await?;
-
-    Ok(Connector::new(http, ws))
+    Ok(Connector { http, ws })
 }

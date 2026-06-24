@@ -1,6 +1,6 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 mod refresh;
-mod positions;
+pub mod positions;
 mod events;
 
 
@@ -9,10 +9,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use crate::morpho::types::MarketParam;
 use crate::api::market::{fetch_all_market_by_chainid}; 
-use crate::api::positions::{fetch_all_positions, position_item_to_borrow_pos}; 
-use crate::cache::positions::{BorrowPosition}; 
+use crate::api::pos::{fetch_all_positions, position_item_to_borrow_pos}; 
+use positions::BorrowPosition;
 use futures::stream::{self, StreamExt};
-
 
 pub type MarketId = FixedBytes<32>;
 
