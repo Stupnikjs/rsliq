@@ -1,46 +1,42 @@
-mod rate_limiter;
-use std::sync::Arc;
 use alloy::{
-    network::{Ethereum, TransactionBuilder}, primitives::{Address, Bytes}, providers::{Provider, ProviderBuilder, RootProvider, WsConnect}, rpc::types::{Filter, Log, TransactionRequest}, transports::{BoxTransport, RpcError, TransportErrorKind},
+    network::Ethereum,
+    primitives::{Address, Bytes},
+    providers::{Provider, ProviderBuilder, RootProvider, WsConnect},
+    rpc::types::{Filter, Log, TransactionRequest},
+    transports::pubsub::PubSubFrontend,
+    network::TransactionBuilder,
 };
+use futures_util::Stream;
 
-use futures_util::{Stream, StreamExt};
-use crate::connector::rate_limiter::RateLimiter;
+pub struct HttpCaller(RootProvider<BoxTransport, Ethereum>);
+pub struct WsSubscriber(RootProvider<PubSubFrontend>);
 
-pub struct Connector {
-    http: Arc<dyn Provider>,
-    ws: RootProvider<Ethereum>,
-    rate_limiter: RateLimiter,
+pub async fn new_http(rpc_url: &str) -> Result<HttpCaller, Box<dyn std::error::Error>> {
+    let p = ProviderBuilder::new().connect_http(rpc_url.parse()?);
+    Ok(HttpCaller(p))
 }
 
-pub async fn new(
-    rpc_url: String,
-    ws_url: String,
-) -> Result<Connector, Box<dyn std::error::Error>> {
-    let http = Arc::new(ProviderBuilder::new().connect_http(rpc_url.parse()?));
-    let ws = ProviderBuilder::new()
+pub async fn new_ws(ws_url: &str) -> Result<WsSubscriber, Box<dyn std::error::Error>> {
+    let p = ProviderBuilder::new()
         .disable_recommended_fillers()
         .connect_ws(WsConnect::new(ws_url))
-        .await?; 
-    Ok(Connector { http, ws, rate_limiter: RateLimiter::new(200) })
+        .await?;
+    Ok(WsSubscriber(p))
 }
 
-impl Connector {
-    pub async fn call_raw(
-        &self,
-        to: Address,
-        data: Bytes,
-    ) -> Result<Bytes, RpcError<TransportErrorKind>> {
-        self.rate_limiter.acquire().await;
+impl HttpCaller {
+    pub async fn call(&self, to: Address, data: Bytes) -> Result<Bytes, Box<dyn std::error::Error>> {
         let tx = TransactionRequest::default().with_to(to).with_input(data);
-        self.http.call(tx).await.map_err(|e| e.into())
+        Ok(self.0.call(&tx).await?)
     }
+}
 
+impl WsSubscriber {
     pub async fn subscribe_logs(
         &self,
         filter: Filter,
     ) -> Result<impl Stream<Item = Log>, Box<dyn std::error::Error>> {
-        let sub = self.ws.subscribe_logs(&filter.clone()).await?;
+        let sub = self.0.subscribe_logs(&filter).await?;
         Ok(sub.into_stream())
     }
 }
