@@ -4,9 +4,10 @@ use alloy::providers::Provider;
 use alloy::pubsub::PubSubFrontend;
 use alloy::rpc::types::Filter;
 use futures_util::{Stream, StreamExt};
-use alloy::primitives::{Address,keccak256};
+use alloy::primitives::{Address,keccak256, FixedBytes};
 use alloy::eips::BlockNumberOrTag;
 use alloy::rpc::types::{ Log};
+use tokio::time::Sleep;
 
 
 use crate::config::{Config, load_base_config};
@@ -17,7 +18,7 @@ use crate::api::market::fetch_all_market_by_chainid;
 pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
-    connector: Connector,
+    connector: Arc<Connector>,
 } 
 
 impl Runner{
@@ -28,7 +29,7 @@ impl Runner{
         };
 
         let cache = Arc::new(MarketCache::new(&[]));
-        let connector = connector::build(&config.main_rpc.clone(), &config.ws_rpc.clone()).await?; 
+        let connector = Arc::new(connector::build(&config.main_rpc.clone(), &config.ws_rpc.clone()).await?); 
 
         Ok(Self { config, cache, connector })
     }
@@ -64,6 +65,23 @@ impl Runner{
 
         Ok(())
     }
+    
+    pub async fn market_loop(&self) {
+    for id in self.cache.ids() {
+        let cache = Arc::clone(&self.cache);
+        let connector = Arc::clone(&self.connector); // connector doit être Arc<Connector>
+
+        tokio::spawn(async move {
+            loop {
+               _ =  cache.onchain_oracle_refresh(&connector, id).await;
+                // recompute all hf
+                // sort
+                // check for liquidation
+                tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+            }
+        });
+    }
+}
 
 /* 
   pub async fn subscribe(&self) -> Result<impl Stream<Item = Log>, Box<dyn std::error::Error>> {

@@ -1,4 +1,5 @@
 use alloy_primitives::{Address,FixedBytes, U256};
+use crate::morpho::hf; 
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BorrowPosition {
@@ -12,4 +13,23 @@ pub struct BorrowPosition {
 }
 
 
+impl  BorrowPosition {
+
+   pub fn health_factor(
+    &self,
+    total_borrow_asset: U256,
+    total_borrow_shares: U256,
+    lltv: U256,
+    oracle_price: U256,
+) -> Option<U256> {
+    hf(
+        self.collateral_assets,
+        self.borrow_shares,
+        total_borrow_shares,
+        total_borrow_asset,
+        lltv,
+        oracle_price,
+    )
+}
+}
 
