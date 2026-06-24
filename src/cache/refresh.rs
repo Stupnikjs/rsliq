@@ -6,7 +6,7 @@ use crate::onchain::calls::{oracle_call, market_call};
 use crate::connector::Connector; 
 use alloy_primitives::{Address,FixedBytes};
 use alloy::providers::Provider;
-
+use alloy::network::Ethereum;
 
 
 
@@ -29,9 +29,9 @@ impl MarketCache {
             }
         }
     }
-     pub async fn onchain_oracle_refresh(
+     pub async fn onchain_oracle_refresh<H: Provider<Ethereum>, W: Provider>(
         &self,
-        conn: &Connector<impl Provider>,
+        conn: &Connector<H, W>,
         market_id: FixedBytes<32>,
     ) -> Result<(), anyhow::Error> {
         let params = self.get_market_param_by_id(market_id)
@@ -46,9 +46,9 @@ impl MarketCache {
         Ok(())
     }
 
-    pub async fn onchain_market_refresh(
+    pub async fn onchain_market_refresh<H: Provider<Ethereum>, W: Provider>(
         &self,
-        conn: &Connector<impl Provider>,
+        conn: &Connector<H, W>,
         morpho_addr:Address,
         market_id: FixedBytes<32>,
     ) -> Result<(), anyhow::Error> {
@@ -60,7 +60,7 @@ impl MarketCache {
 
         Ok(())
     }
-
+/* *
     pub async fn  spawn_api_refresh(&self, refresh_frequency_sec:u64, chain_id:u32 ) {
     let cache = self.clone(); // MarketCache doit être Clone (wrap Arc)
     tokio::spawn(async move {
@@ -69,6 +69,6 @@ impl MarketCache {
             tokio::time::sleep(Duration::from_secs(refresh_frequency_sec)).await;
         }
     });
-
-                }
+*/
+                
 }

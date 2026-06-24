@@ -1,3 +1,4 @@
+use alloy::network::Ethereum;
 use alloy::providers::{Provider, ProviderBuilder};
 use alloy::pubsub::PubSubFrontend;
 use alloy::transports::ws::WsConnect;
@@ -10,7 +11,7 @@ pub struct Connector<H, W> {
     pub ws: W,
 }
 
-impl<H: Provider, W: Provider<PubSubFrontend>> Connector<H, W> {
+impl<H: Provider, W: Provider<Ethereum>> Connector<H, W> {
     pub fn new(http: H, ws: W) -> Self {
         Self { http, ws }
     }
@@ -25,20 +26,29 @@ impl<H: Provider, W: Provider<PubSubFrontend>> Connector<H, W> {
             .to(to)
             .input(data.into());
 
-        let result = self.http.call(&tx).await?;
+        let result = self.http.call(tx).await?;
         Ok(result)
     }
 
     // WS — subscribe aux logs
-    pub async fn subscribe_logs<F>(
+    pub async fn subscribe<F>(
         &self,
-        filter: Filter,
+        morpho_addr: Address,
         mut on_log: F,
     ) -> Result<(), Box<dyn std::error::Error>>
     where
         F: FnMut(Log),
-    {
-        let sub = self.ws.subscribe_logs(&filter).await?;
+    {   
+        let filter = Filter::new().address(morpho_addr)
+        .from_block(BlockNumberOrTag::Latest)
+        .events([
+            "Supply(bytes32,address,address,uint256,uint256)",
+            "Borrow(bytes32,address,address,address,uint256,uint256)",
+            "Repay(bytes32,address,address,uint256,uint256)",
+            "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
+            "AccrueInterest(bytes32,uint256,uint256,uint256)",
+        ]);
+        let sub = self.ws.subscribe_logs(filter).await?;
         let mut stream = sub.into_stream();
 
         while let Some(log) = stream.next().await {
@@ -71,14 +81,14 @@ pub async fn build(
     http_url: &str,
     ws_url: &str,
 ) -> Result<
-    Connector<impl Provider, impl Provider<PubSubFrontend>>,
+    Connector<impl Provider, impl Provider<Ethereum>>,
     Box<dyn std::error::Error>,
 > {
     let http = ProviderBuilder::new()
-        .on_http(http_url.parse()?);
+        .connect_http(http_url.parse()?);
 
     let ws = ProviderBuilder::new()
-        .on_ws(WsConnect::new(ws_url))
+        .connect_ws(WsConnect::new(ws_url))
         .await?;
 
     Ok(Connector::new(http, ws))

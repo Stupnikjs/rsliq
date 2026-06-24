@@ -1,11 +1,12 @@
 use std::sync::Arc;
+use alloy::network::Ethereum;
 use alloy::providers::Provider;
 use alloy::pubsub::PubSubFrontend;
 use alloy::rpc::types::Filter;
 use futures_util::{Stream, StreamExt};
 use alloy::primitives::{Address,keccak256};
 use alloy::eips::BlockNumberOrTag;
-use alloy::rpc::types::{Filter, Log};
+use alloy::rpc::types::{ Log};
 
 
 use crate::config::{Config, load_base_config};
@@ -13,13 +14,13 @@ use crate::connector::{self, Connector};
 use crate::cache::MarketCache;
 use crate::api::market::fetch_all_market_by_chainid;
 
-pub struct Runner {
+pub struct Runner <H,W>{
     config: Config,
     cache: Arc<MarketCache>,
-    connector: Connector,
+    connector: Connector<H,W>,
 } 
 
-impl Runner {
+impl<H: Provider, W: Provider<Ethereum>> Runner<H, W>{
     pub async fn new(chainid: u64) -> Result<Self, Box<dyn std::error::Error>> {
         let config = match chainid {
             8453 => load_base_config(),
@@ -27,7 +28,7 @@ impl Runner {
         };
 
         let cache = Arc::new(MarketCache::new(&[]));
-        let connector = connector::new(config.main_rpc.clone(), config.ws_rpc.clone()).await?; 
+        let connector = connector::build(&config.main_rpc.clone(), &config.ws_rpc.clone()).await?; 
 
         Ok(Self { config, cache, connector })
     }
@@ -62,17 +63,8 @@ impl Runner {
 
 
   pub async fn subscribe(&self) -> Result<impl Stream<Item = Log>, Box<dyn std::error::Error>> {
-    let filter = Filter::new()
-        .address(self.config.morpho_addr)
-        .from_block(BlockNumberOrTag::Latest)
-        .events([
-            "Supply(bytes32,address,address,uint256,uint256)",
-            "Borrow(bytes32,address,address,address,uint256,uint256)",
-            "Repay(bytes32,address,address,uint256,uint256)",
-            "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
-            "AccrueInterest(bytes32,uint256,uint256,uint256)",
-        ]);
-    self.connector.subscribe_logs(filter).await
+    let process_log = some (); 
+    self.connector.subscribe(self.config.morpho_addr, process_log).await
 }
 
 pub async fn listen(&self, mut stream: impl Stream<Item = Log> + Unpin) -> Result<(), Box<dyn std::error::Error>> {
@@ -97,4 +89,4 @@ pub async fn listen(&self, mut stream: impl Stream<Item = Log> + Unpin) -> Resul
     }
     Ok(())
 }
-}
+    }

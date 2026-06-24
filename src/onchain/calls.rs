@@ -4,6 +4,7 @@ use alloy::sol_types::SolType;
 use alloy::sol_types::sol_data::{self, FixedBytes};
 use crate::connector::Connector; 
 use alloy::providers::Provider;
+use alloy::network::Ethereum;
 use crate::onchain::encode::{encode_calldata, selector};   
 
 #[derive(Debug)]
@@ -51,22 +52,22 @@ pub fn decode_oracle_price(data: &[u8])-> Result<U256,anyhow::Error> {
     if data.len() < 32 {
         return Err(anyhow::anyhow!("response too short"));
     }
-    Ok(U256::from_be_slice(&data))
+    Ok(U256::from_be_slice(data))
 }
 
-pub async  fn market_call(conn: &Connector<impl Provider>, morpho_addr:Address, market_id: &[u8] ) -> Result<MarketStatsCall, anyhow::Error>{
+pub async  fn market_call<H: Provider<Ethereum>, W: Provider>(conn: &Connector<H, W>, morpho_addr:Address, market_id: &[u8] ) -> Result<MarketStatsCall, anyhow::Error>{
     let selector = selector("market(bytes32)"); 
     let calldata = encode_calldata(selector, market_id); 
-    let resp = conn.call_raw(morpho_addr, calldata).await?; 
-    decode_market_stats(&resp)
+    let resp = conn.call_raw(morpho_addr, calldata).await; 
+    decode_market_stats(&resp.expect("market call failed"))
 }
 
 
 
-pub async  fn oracle_call(conn: &Connector<impl Provider>, oracle_addr:Address) -> Result<U256, anyhow::Error>{
+pub async  fn oracle_call<H: Provider, W: Provider>(conn: &Connector<H, W>, oracle_addr:Address) -> Result<U256, anyhow::Error>{
     let selector = selector("price()"); 
     let calldata = encode_calldata(selector, &[]); 
-    let resp = conn.call_raw(oracle_addr, calldata).await?; 
-    decode_oracle_price(&resp)
+    let resp = conn.call_raw(oracle_addr, calldata).await; 
+    decode_oracle_price(&resp.expect("erreur calling oracle"))
 }
 

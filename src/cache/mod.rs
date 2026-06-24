@@ -1,7 +1,7 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 mod refresh;
 mod positions;
-
+mod events;
 
 
 use alloy_primitives::{Address, U256, FixedBytes};
