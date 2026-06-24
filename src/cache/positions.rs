@@ -8,7 +8,7 @@ pub struct BorrowPosition {
     pub borrow_shares: U256,
     pub borrow_assets_usd: U256,
     pub collateral_assets: U256,
-    pub cached_hf: U256, 
+    pub cached_hf: Option<U256>, 
 
 }
 
