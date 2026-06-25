@@ -119,6 +119,44 @@ where
             positions: market.positions.clone(),
         })
     }
+
+    // cached_hf must be set 
+  pub fn insert_pos(&mut self, pos: &BorrowPosition) {
+    let snap = self.snapshot(pos.market_id).expect("snap in insert_pos failed");
+
+    let mut new_positions: Vec<BorrowPosition> = Vec::with_capacity(snap.positions.len() + 1);
+
+    if pos.cached_hf.is_none() {
+        new_positions.extend_from_slice(&snap.positions);
+        new_positions.push(pos.clone());
+        let _ = self.update(pos.market_id, |m| m.positions = new_positions);
+        return;
+    }
+
+    let insert_at = snap
+        .positions
+        .iter()
+        .position(|p| p.cached_hf >= pos.cached_hf)
+        .unwrap_or(snap.positions.len()); // append si le plus grand
+
+    new_positions.extend_from_slice(&snap.positions[..insert_at]);
+    new_positions.push(pos.clone());
+    new_positions.extend_from_slice(&snap.positions[insert_at..]);
+
+    let _ = self.update(pos.market_id, |m| m.positions = new_positions);
+}
+
+  pub fn remove_pos(&mut self, pos: &BorrowPosition) {
+    let snap = self.snapshot(pos.market_id).expect("snap in remove_pos failed");
+
+    let new_positions: Vec<BorrowPosition> = snap
+        .positions
+        .into_iter()
+        .filter(|p| p.address != pos.address)
+        .collect();
+
+    let _ = self.update(pos.market_id, |m| m.positions = new_positions);
+}
 }
 
 

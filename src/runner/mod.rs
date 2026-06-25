@@ -74,9 +74,8 @@ impl Runner{
         tokio::spawn(async move {
             loop {
                _ =  cache.onchain_oracle_refresh(&connector, id).await;
-                // recompute all hf
-                // sort
-                // check for liquidation
+                cache.recompute_all_hf(); 
+                cache.sort_by_hf(); 
                 tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
             }
         });
