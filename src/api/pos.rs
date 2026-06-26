@@ -65,7 +65,7 @@ pub fn position_item_to_borrow_pos(
         borrow_shares,
         borrow_assets_usd,
         collateral_assets,
-        cached_hf: U256::ZERO, // 0 par défaut comme demandé, le calcul se fera après
+        cached_hf: Some(U256::ZERO), // 0 par défaut comme demandé, le calcul se fera après
     }
 }
 

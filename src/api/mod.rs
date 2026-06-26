@@ -75,7 +75,7 @@ impl HttpClient {
             .send()
             .await?;
 
-
+        
         // transforme json en envelope 
         let envelope: Envelope = resp.json().await?;
 

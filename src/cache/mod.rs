@@ -15,7 +15,7 @@ use positions::BorrowPosition;
 use futures::stream::{self, StreamExt};
 
 pub type MarketId = FixedBytes<32>;
-
+pub const WAD: U256 = U256::from_limbs([1_000_000_000_000_000_000, 0, 0, 0]);
 
 #[derive(Default, Clone)]
 pub struct MarketStats {
@@ -112,6 +112,9 @@ where
     {
         let guard = self.markets.read().unwrap();
         let market = guard.get(&id)?.read().unwrap();
+        if market.positions.len() == 0 {
+            return None;
+        }
         Some(MarketSnapshot {
             params: market.params.clone(),
             id,
@@ -121,7 +124,7 @@ where
     }
 
     // cached_hf must be set 
-  pub fn insert_pos(&mut self, pos: &BorrowPosition) {
+  pub fn insert_pos(&self, pos: &BorrowPosition) {
     let snap = self.snapshot(pos.market_id).expect("snap in insert_pos failed");
 
     let mut new_positions: Vec<BorrowPosition> = Vec::with_capacity(snap.positions.len() + 1);
@@ -146,7 +149,7 @@ where
     let _ = self.update(pos.market_id, |m| m.positions = new_positions);
 }
 
-  pub fn remove_pos(&mut self, pos: &BorrowPosition) {
+  pub fn remove_pos(&self, pos: &BorrowPosition) {
     let snap = self.snapshot(pos.market_id).expect("snap in remove_pos failed");
 
     let new_positions: Vec<BorrowPosition> = snap

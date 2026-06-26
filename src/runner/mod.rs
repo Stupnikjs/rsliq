@@ -36,10 +36,11 @@ impl Runner{
 
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let markets = fetch_all_market_by_chainid(self.config.chain_id).await?;
+        print!("{} market fetched", markets.len()); 
         self.cache = Arc::new(MarketCache::new(&markets));
         self.cache.api_refresh(self.config.chain_id).await;
-        // full onchain refresh
-        // full quote 
+
+        print!("{} market watched ", self.cache.ids().len());
 
         // _ = self.subscribe().await?; 
         Ok(())
@@ -57,10 +58,7 @@ impl Runner{
         });
 
 
-        // for all market launch market routines
-        // for id in cache.ids() 
-        // spawn markets 
-        // Task 2 : écoute les events Morpho et met à jour le cache
+        self.market_loop().await;
         let cache_ws = Arc::clone(&self.cache);
 
         Ok(())
@@ -70,13 +68,19 @@ impl Runner{
     for id in self.cache.ids() {
         let cache = Arc::clone(&self.cache);
         let connector = Arc::clone(&self.connector); // connector doit être Arc<Connector>
-
+        let mut count = 0; 
         tokio::spawn(async move {
             loop {
-               _ =  cache.onchain_oracle_refresh(&connector, id).await;
-                cache.recompute_all_hf(); 
-                cache.sort_by_hf(); 
-                tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+                _ =  cache.onchain_oracle_refresh(&connector, id).await;
+                
+                if count % 10 == 0 {
+                    cache.recompute_all_hf(id); 
+                    cache.sort_by_hf(id); 
+                }
+                let interval = cache.refresh_interval(id);
+                
+                tokio::time::sleep(tokio::time::Duration::from_secs(interval)).await;
+                count += 1; 
             }
         });
     }

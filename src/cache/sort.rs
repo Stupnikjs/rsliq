@@ -1,11 +1,11 @@
-use alloy_primitives::FixedBytes;
-use crate::cache::{MarketCache, positions::BorrowPosition};
+use alloy_primitives::{FixedBytes, U256};
+use crate::cache::{MarketCache, positions::BorrowPosition,WAD};
 
 
 
 impl MarketCache {
     
-    pub fn recompute_all_hf(&mut self, id: FixedBytes<32>) {
+    pub fn recompute_all_hf(&self, id: FixedBytes<32>) {
         let snap = self.snapshot(id).expect("snap not found");
         let mparam = self.get_market_param_by_id(id).expect("market param not found");
 
@@ -28,7 +28,7 @@ impl MarketCache {
         m.positions = updated; 
        })
     }
-    pub fn sort_by_hf(&mut self, id: FixedBytes<32>) {
+    pub fn sort_by_hf(&self, id: FixedBytes<32>) {
     _ = self.update(id, |m| {
         m.positions.sort_by(|a, b| {
             match (a.cached_hf, b.cached_hf) {
@@ -40,10 +40,42 @@ impl MarketCache {
         });
     });
 }
+    pub fn refresh_interval(&self, id: FixedBytes<32>) -> u64 {
+    let snap = self.snapshot(id).expect("snapshot market failed");
+    let first_hf = snap.positions[0].cached_hf; 
+
+     let Some(hf) = snap.positions.first().and_then(|p| p.cached_hf) else {
+        return 3600;  
+    }; 
+
+    if hf < WAD {
+        0;
+    }
+
+    if hf < WAD * U256::from(105u64) / U256::from(100u64) {
+        5;
+    }
+
+    if hf < WAD * U256::from(110u64) / U256::from(100u64) {
+        15;
+    }
+
+    if hf < WAD * U256::from(120u64) / U256::from(100u64) {
+        60;
+    }
+
+    if hf < WAD * U256::from(150u64) / U256::from(100u64) {
+        300;
+    }
+
+    30 * 60
+
+}
 
 
     
 }
+
 
 
 

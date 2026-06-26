@@ -28,11 +28,11 @@ use crate::runner::Runner;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let chain = std::env::args().nth(1).unwrap_or_else(|| {
-    eprintln!("usage: rsliq <chain>");
+    eprintln!("missing <chain>");
     std::process::exit(1);
     });
     let chainint:u64 = chain.parse()?;
-    let mut runner  = runner::Runner::new(8453).await.expect("failed runner new func"); 
+    let mut runner  = runner::Runner::new(8453).await.expect("failed runner new func");
     runner.init().await.expect(""); 
     runner.run().await.expect(""); 
     // garde le main en vie

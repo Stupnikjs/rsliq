@@ -11,12 +11,15 @@ pub async fn fetch_all_market(
    
     let client = HttpClient::new();
     let mut all = Vec::new();
-
+    println!("{}", chain_id);
     use serde_json::Value;
-
-let result: Value = client
+    let result = client
     .query(&markets_query(chain_id))
     .await?;
+    println!(
+    "GRAPHQL FULL JSON:\n{}",
+    serde_json::to_string_pretty(&result)?
+);
     let markets: MarketsResult = serde_json::from_value(result)?;
 
     all.extend(markets.markets.items); 
@@ -71,13 +74,14 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
 
  pub async fn fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
      let market_result = fetch_all_market(chain_id).await;
-    // On crée le vecteur qui va recevoir les marchés en cas de succès
+    println!("{:?}", market_result); 
     let mut all_markets = Vec::new();
-
+    
     match market_result {
         // 1. On extrait la valeur "result" à l'intérieur du Ok
         Ok(result) => {
             all_markets.extend(result);
+            println!("market {}", all_markets.len()); 
         }
         Err(e) => {
             // Si ça plante, on intercepte l'erreur ici !

@@ -7,27 +7,28 @@ use crate::connector::Connector;
 use alloy_primitives::{Address,FixedBytes};
 use alloy::providers::Provider;
 use alloy::network::Ethereum;
-
+use futures::stream::{self, StreamExt};
 
 
 impl MarketCache {
     pub async fn api_refresh(&self, chain_id: u32) {
-        for id in self.ids() {
+         stream::iter(self.ids())
+        .for_each_concurrent(16, |id| async move {
             if let Ok(positions) = fetch_all_positions(id, chain_id).await {
                 if positions.len() > 5 {
-                     let borrow_pos_arr: Vec<_> = positions
-                    .into_iter()
-                    .map(|p| position_item_to_borrow_pos(p, id))
-                    .filter(|p| p.borrow_assets_usd > 1)
-                    .collect();
+                    let borrow_pos_arr = positions
+                        .into_iter()
+                        .map(|p| position_item_to_borrow_pos(p, id))
+                        .filter(|p| p.borrow_assets_usd > 1)
+                        .collect();
 
-                self.update(id, |m| {
-                    m.positions = borrow_pos_arr;
-                });
+                    self.update(id, |m| {
+                        m.positions = borrow_pos_arr;
+                    });
                 }
-               
             }
-        }
+        })
+        .await;
     }
      pub async fn onchain_oracle_refresh(
         &self,
@@ -60,15 +61,5 @@ impl MarketCache {
 
         Ok(())
     }
-/* *
-    pub async fn  spawn_api_refresh(&self, refresh_frequency_sec:u64, chain_id:u32 ) {
-    let cache = self.clone(); // MarketCache doit être Clone (wrap Arc)
-    tokio::spawn(async move {
-        loop {
-            cache.api_refresh(chain_id).await;
-            tokio::time::sleep(Duration::from_secs(refresh_frequency_sec)).await;
-        }
-    });
-*/
                 
 }
