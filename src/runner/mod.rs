@@ -19,6 +19,7 @@ pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
     connector: Arc<Connector>,
+    channel: Sender<Candidate>
 } 
 
 impl Runner{
