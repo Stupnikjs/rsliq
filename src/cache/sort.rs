@@ -72,6 +72,9 @@ impl MarketCache {
 
 }
 
+  pub fn lowest_hf(&self, id: FixedBytes<32>) -> BorrowPosition {
+    self.snapshot(id).expect("snapshot failed while finding lowest_hf").positions[0].clone()
+  } 
 
     
 }
