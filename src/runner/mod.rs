@@ -79,6 +79,9 @@ impl Runner{
                     cache.sort_by_hf(id); 
                 }
                 let interval = cache.refresh_interval(id);
+                if interval == 0 {
+                 self.channel.send(cache.first_pos());
+               }
                 
                 tokio::time::sleep(tokio::time::Duration::from_secs(interval)).await;
                 count += 1; 
