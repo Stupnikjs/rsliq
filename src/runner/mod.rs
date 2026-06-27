@@ -65,16 +65,16 @@ impl Runner {
             tokio::spawn(async move {
                 loop {
                     let _ = cache.onchain_oracle_refresh(&connector, id).await;
+cache.recompute_all_hf(id);
 
                     if count % 10 == 0 {
-                        cache.recompute_all_hf(id);
                         cache.sort_by_hf(id);
                     }
                     let lowest = cache.lowest_hf(id); 
                     if lowest.cached_hf < WAD {
-                        if let Some(candidate) =  {
+                        if let Some(lowest) =  {
                             let mut w = wallet.lock().await;
-                            let _ = liquidate(&mut w, &connector, candidate).await;
+                            let _ = liquidate(&mut w, &connector, lowest).await;
                         }
                     }
 
