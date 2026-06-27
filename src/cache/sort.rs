@@ -40,38 +40,33 @@ impl MarketCache {
         });
     });
 }
-    pub fn refresh_interval(&self, id: FixedBytes<32>) -> u64 {
+    pub fn lowest_hf_and_interval(&self, id: FixedBytes<32>) -> (Option<BorrowPosition>, u64) {
     let snap = self.snapshot(id).expect("snapshot market failed");
-    let first_hf = snap.positions[0].cached_hf; 
 
-     let Some(hf) = snap.positions.first().and_then(|p| p.cached_hf) else {
-        return 3600;  
-    }; 
+    let Some(first) = snap.positions.first().cloned() else {
+        return (None, 3600);
+    };
 
-    if hf < WAD {
-        0;
-    }
+    let Some(hf) = first.cached_hf else {
+        return (Some(first), 3600);
+    };
 
-    if hf < WAD * U256::from(105u64) / U256::from(100u64) {
-        5;
-    }
+    let interval = if hf < WAD {
+        0
+    } else if hf < WAD * U256::from(105u64) / U256::from(100u64) {
+        5
+    } else if hf < WAD * U256::from(110u64) / U256::from(100u64) {
+        15
+    } else if hf < WAD * U256::from(120u64) / U256::from(100u64) {
+        60
+    } else if hf < WAD * U256::from(150u64) / U256::from(100u64) {
+        300
+    } else {
+        30 * 60
+    };
 
-    if hf < WAD * U256::from(110u64) / U256::from(100u64) {
-        15;
-    }
-
-    if hf < WAD * U256::from(120u64) / U256::from(100u64) {
-        60;
-    }
-
-    if hf < WAD * U256::from(150u64) / U256::from(100u64) {
-        300;
-    }
-
-    30 * 60
-
+    (Some(first), interval)
 }
-
   pub fn lowest_hf(&self, id: FixedBytes<32>) -> BorrowPosition {
     self.snapshot(id).expect("snapshot failed while finding lowest_hf").positions[0].clone()
   } 

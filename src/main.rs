@@ -12,6 +12,7 @@ mod onchain;
 mod config;
 mod runner; 
 pub mod swap;
+mod liquidate;
 
 
 use std::sync::Arc;

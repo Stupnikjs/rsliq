@@ -1,8 +1,10 @@
 use alloy::primitives::Address;
+use alloy::signers::local::PrivateKeySigner;
 use crate::swap;
 use crate::config; 
 use std::env::var;
 use std::str::FromStr;
+use std::sync::Arc;
 
 mod address; 
 
@@ -15,20 +17,20 @@ pub struct Config {
     pub morpho_addr: Address,
     pub liquidator_addr: Address,
     pub dexes: Vec<Box<dyn swap::Dex>>,
+    pub signer: Arc<PrivateKeySigner>, 
 }
 
 
-pub fn load_base_config() -> Config {
-    dotenvy::dotenv().ok(); 
-    let main_rpc = var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set");
-    let ws_rpc:String = var("BASE_WS_ALCH").expect("BASE_WS_ALCH not set"); 
-    Config {
+pub fn load_base_config() -> Result<Config, anyhow::Error> {
+    dotenvy::dotenv().ok();
+    Ok(Config {
         chain_id: 8453,
-        main_rpc: main_rpc,
+        main_rpc: var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set"),
         second_rpc: String::new(),
-        ws_rpc: ws_rpc,
+        ws_rpc: var("BASE_WS_ALCH").expect("BASE_WS_ALCH not set"),
         morpho_addr: config::address::MORPHO_MAINNET,
         liquidator_addr: config::address::BASE_LIQUIDATOR_LAST,
         dexes: vec![],
-    }
+        signer: Arc::new(PrivateKeySigner::from_str(&var("PRIV_K")?)?),
+    })
 }

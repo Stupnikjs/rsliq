@@ -1,32 +1,30 @@
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use std::str::FromStr;
+use alloy::signers::local::PrivateKeySigner;
 use tokio::time::Duration;
 
 use crate::config::{Config, load_base_config};
 use crate::connector::{self, Connector};
 use crate::cache::{MarketCache, WAD};
 use crate::api::market::fetch_all_market_by_chainid;
-
+use crate::liquidate; 
 
 pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
     connector: Arc<Connector>,
-    wallet: Arc<Mutex<LocalWallet>>,
 }
 
 impl Runner {
     pub async fn new(chainid: u64) -> Result<Self, Box<dyn std::error::Error>> {
         let config = match chainid {
-            8453 => load_base_config(),
+            8453 => load_base_config()?,
             _ => panic!("unsupported chain {}", chainid),
         };
 
         let cache = Arc::new(MarketCache::new(&[]));
         let connector = Arc::new(connector::build(&config.main_rpc, &config.ws_rpc).await?);
-        let wallet = Arc::new(Mutex::new(LocalWallet::from_str(&config.private_key)?));
-
-        Ok(Self { config, cache, connector, wallet })
+        Ok(Self { config, cache, connector })
     }
 
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -39,7 +37,6 @@ impl Runner {
     }
 
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        // Task 1 : refresh API périodique
         let cache_api = Arc::clone(&self.cache);
         let chain_id = self.config.chain_id;
         tokio::spawn(async move {
@@ -49,7 +46,6 @@ impl Runner {
             }
         });
 
-        // Task 2 : une loop par market
         self.market_loop().await;
 
         Ok(())
@@ -59,23 +55,22 @@ impl Runner {
         for id in self.cache.ids() {
             let cache = Arc::clone(&self.cache);
             let connector = Arc::clone(&self.connector);
-            let wallet = Arc::clone(&self.wallet);
             let mut count = 0u64;
 
             tokio::spawn(async move {
                 loop {
                     let _ = cache.onchain_oracle_refresh(&connector, id).await;
-cache.recompute_all_hf(id);
+                    cache.recompute_all_hf(id);
 
                     if count % 10 == 0 {
                         cache.sort_by_hf(id);
                     }
-                    let lowest = cache.lowest_hf(id); 
-                    let interval = lowest.to_interval()
-                    if lowest.cached_hf < WAD {
-                        if let Some(lowest) =  {
-                            let mut w = wallet.lock().await;
-                            let _ = liquidate(&mut w, &connector, lowest).await;
+
+                    let (lowest, interval) = cache.lowest_hf_and_interval(id);
+
+                    if let Some(pos) = lowest {
+                        if pos.cached_hf.map_or(false, |hf| hf < WAD) {
+                            let _ = liquidate::liquidate().await;
                         }
                     }
 
