@@ -2,7 +2,7 @@ use alloy::primitives::{Address, U256};
 use std::time::Instant;
 use crate::morpho::types::{MarketParam}; 
 
-mod uni;
+pub mod uni;
 
 pub trait Dex: Send + Sync {
     fn best_amount_in(

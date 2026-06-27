@@ -1,9 +1,8 @@
 // src/liquidate/build.rs
-
 use alloy::primitives::{Address, Bytes, U256};
-use crate::abi::liquidate::{encode_liquidate, MarketParams, SwapStep};
-use crate::abi::encode::{selector, encode_address, encode_uint256};
+use crate::onchain::encode::{selector, encode_address, encode_uint256};
 use crate::swap::types::PoolEdge;
+use crate::swap::uni;
 use crate::morpho::types::MarketParam;
 
 pub struct Liquidable {
@@ -15,13 +14,13 @@ pub struct Liquidable {
 pub fn build_steps(route: &[PoolEdge], liquidator_addr: Address) -> Result<Vec<SwapStep>, anyhow::Error> {
     route.iter().map(|hop| {
         let data = match hop.dex_name.as_str() {
-            "UNIV3" => encode_exact_input_single_uni(
+            "UNIV3" => uni::encode_exact_input_single_uni(
                 hop.token_in,
                 hop.token_out,
                 hop.fee,
                 liquidator_addr,
             ),
-            "PANCAKE" => encode_exact_input_single_pancake(
+            "PANCAKE" => uni::encode_exact_input_single_pancake(
                 hop.token_in,
                 hop.token_out,
                 hop.fee,
