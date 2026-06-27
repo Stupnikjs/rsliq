@@ -71,6 +71,7 @@ cache.recompute_all_hf(id);
                         cache.sort_by_hf(id);
                     }
                     let lowest = cache.lowest_hf(id); 
+                    let interval = lowest.to_interval()
                     if lowest.cached_hf < WAD {
                         if let Some(lowest) =  {
                             let mut w = wallet.lock().await;
@@ -79,7 +80,7 @@ cache.recompute_all_hf(id);
                     }
 
                     count += 1;
-                    tokio::time::sleep(Duration::from_secs(1)).await;
+                    tokio::time::sleep(Duration::from_secs(interval)).await;
                 }
             });
         }
