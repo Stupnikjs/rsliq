@@ -11,15 +11,11 @@ pub async fn fetch_all_market(
    
     let client = HttpClient::new();
     let mut all = Vec::new();
-    println!("{}", chain_id);
     use serde_json::Value;
     let result = client
     .query(&markets_query(chain_id))
     .await?;
-    println!(
-    "GRAPHQL FULL JSON:\n{}",
-    serde_json::to_string_pretty(&result)?
-);
+   
     let markets: MarketsResult = serde_json::from_value(result)?;
 
     all.extend(markets.markets.items); 
@@ -74,7 +70,6 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
 
  pub async fn fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
      let market_result = fetch_all_market(chain_id).await;
-    println!("{:?}", market_result); 
     let mut all_markets = Vec::new();
     
     match market_result {
@@ -96,10 +91,17 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
     let mut all_morpho_markets:Vec<MarketParam> = Vec::new();
     
     for m in &all_markets {
+        let usd: f64 = m.state.borrow_assets_usd.parse_f64().unwrap_or(0.0);
+        if usd < 10_000.0 {
+        continue;
+         }
         let result = market_item_to_morpho_market(m, chain_id); 
-        // Si la conversion réussit, on récupère le marché, sinon on passe au suivant
+        // filter 
         match result {
-            Ok(result) => { all_morpho_markets.push(result); }
+            Ok(result) => { 
+                
+                all_morpho_markets.push(result); 
+            }
             Err(err) => {
                 continue; 
             }

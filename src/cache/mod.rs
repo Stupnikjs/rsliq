@@ -3,6 +3,7 @@ mod refresh;
 pub mod positions;
 mod events;
 mod sort; 
+mod logs;
 
 
 use alloy_primitives::{Address, U256, FixedBytes};

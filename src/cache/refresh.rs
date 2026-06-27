@@ -13,9 +13,9 @@ use futures::stream::{self, StreamExt};
 impl MarketCache {
     pub async fn api_refresh(&self, chain_id: u32) {
          stream::iter(self.ids())
-        .for_each_concurrent(16, |id| async move {
+        .for_each_concurrent(5, |id| async move {
             if let Ok(positions) = fetch_all_positions(id, chain_id).await {
-                if positions.len() > 5 {
+                if positions.len() > 10 {
                     let borrow_pos_arr = positions
                         .into_iter()
                         .map(|p| position_item_to_borrow_pos(p, id))

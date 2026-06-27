@@ -29,7 +29,7 @@ impl Runner {
 
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let markets = fetch_all_market_by_chainid(self.config.chain_id).await?;
-        println!("{} markets fetched", markets.len());
+        
         self.cache = Arc::new(MarketCache::new(&markets));
         self.cache.api_refresh(self.config.chain_id).await;
         println!("{} markets watched", self.cache.ids().len());
@@ -59,6 +59,7 @@ impl Runner {
 
             tokio::spawn(async move {
                 loop {
+                    cache.log_market(id);
                     let _ = cache.onchain_oracle_refresh(&connector, id).await;
                     cache.recompute_all_hf(id);
 

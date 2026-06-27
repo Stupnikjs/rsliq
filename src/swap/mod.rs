@@ -1,10 +1,13 @@
 use alloy::primitives::{Address, U256};
 use std::time::Instant;
+use crate::morpho::types::{MarketParam}; 
+
+mod uni;
 
 pub trait Dex: Send + Sync {
     fn best_amount_in(
         &self,
-        market: &dyn MorphoMarket,
+        market: MarketParam,
         amount_in: U256,
         oracle_price: U256,
     ) -> Option<PoolEdge>;
@@ -15,14 +18,6 @@ pub trait Dex: Send + Sync {
 }
 
 
-
-pub trait MorphoMarket: Send + Sync {
-    fn get_pair(&self) -> &str;
-    fn get_collateral_token(&self) -> Address;
-    fn get_loan_token(&self) -> Address;
-    fn get_lltv(&self) -> U256;
-    fn max_slippage(&self) -> f64;
-}
 
 #[derive(Debug, Clone)]
 pub struct SwapStep {
