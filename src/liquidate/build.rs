@@ -1,9 +1,10 @@
 // src/liquidate/build.rs
 use alloy::primitives::{Address, Bytes, U256};
 use crate::onchain::encode::{selector, encode_address, encode_uint256};
-use crate::swap::types::PoolEdge;
+use crate::swap::{SwapStep,PoolEdge};
 use crate::swap::uni;
 use crate::morpho::types::MarketParam;
+use crate::liquidate::encode::encode_liquidate; 
 
 pub struct Liquidable {
     pub borrower: Address,
@@ -31,7 +32,7 @@ pub fn build_steps(route: &[PoolEdge], liquidator_addr: Address) -> Result<Vec<S
 
         Ok(SwapStep {
             target: hop.router,
-            data,
+            data: data.to_vec(),
             token_in: hop.token_in,
             token_out: hop.token_out,
             amount_in_offset: match hop.dex_name.as_str() {
@@ -49,22 +50,16 @@ pub fn to_liquidation_calldata(
     market: &MarketParam,
     route: &[PoolEdge],
 ) -> Result<Bytes, anyhow::Error> {
-    let mp = MarketParams {
-        loan_token:        market.loan_token,
-        collateral_token:  market.collateral_token,
-        oracle:            market.oracle,
-        irm:               market.irm,
-        lltv:              market.lltv,
-    };
+
 
     let steps = build_steps(route, liquidator_addr)?;
 
     Ok(encode_liquidate(
-        &mp,
+        market,
         liquidable.borrower,
         liquidable.seize_assets,
         liquidable.repay_shares,
-        &steps,
+        steps,
         U256::ZERO,
     ))
 }

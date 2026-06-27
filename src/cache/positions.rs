@@ -1,12 +1,12 @@
 use alloy_primitives::{Address,FixedBytes, U256};
 use crate::morpho::hf; 
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BorrowPosition {
     pub market_id: FixedBytes<32>,
     pub address: Address,
     pub borrow_shares: U256,
-    pub borrow_assets_usd: U256,
+    pub borrow_assets_usd: f64,
     pub collateral_assets: U256,
     pub cached_hf: Option<U256>, 
 

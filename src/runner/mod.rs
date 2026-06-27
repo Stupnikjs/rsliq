@@ -39,31 +39,35 @@ impl Runner {
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let cache_api = Arc::clone(&self.cache);
         let chain_id = self.config.chain_id;
-        tokio::spawn(async move {
-            loop {
-                cache_api.api_refresh(chain_id).await;
-                tokio::time::sleep(Duration::from_secs(60)).await;
-            }
-        });
+       
 
         self.market_loop().await;
-
+         tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(1800)).await;
+                cache_api.api_refresh(chain_id).await;
+                
+            }
+        });
         Ok(())
     }
 
     async fn market_loop(&self) {
         for id in self.cache.ids() {
             let cache = Arc::clone(&self.cache);
+            let morpho_addr = self.config.morpho_addr.clone(); 
             let connector = Arc::clone(&self.connector);
             let mut count = 0u64;
 
             tokio::spawn(async move {
                 loop {
-                    cache.log_market(id);
+                    
                     let _ = cache.onchain_oracle_refresh(&connector, id).await;
+                    cache.log_market(id);
                     cache.recompute_all_hf(id);
 
                     if count % 10 == 0 {
+                        let _ = cache.onchain_market_refresh(&connector, morpho_addr, id).await;
                         cache.sort_by_hf(id);
                     }
 

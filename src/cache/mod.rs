@@ -113,7 +113,7 @@ where
     {
         let guard = self.markets.read().unwrap();
         let market = guard.get(&id)?.read().unwrap();
-        if market.positions.len() == 0 {
+        if market.positions.len() == 0 { 
             return None;
         }
         Some(MarketSnapshot {

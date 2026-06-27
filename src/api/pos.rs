@@ -53,8 +53,8 @@ pub fn position_item_to_borrow_pos(
     let borrow_shares = U256::from_str(&pos_item.state.borrow_shares.to_string())
         .unwrap_or(U256::ZERO);
         
-    let borrow_assets_usd = U256::from_str(&pos_item.state.borrow_assets_usd.to_string())
-        .unwrap_or(U256::ZERO);
+    let borrow_assets_usd = f64::from_str(&pos_item.state.borrow_assets_usd.to_string())
+        .unwrap_or(0.0);
         
     let collateral_assets = U256::from_str(&pos_item.state.collateral.to_string())
         .unwrap_or(U256::ZERO);

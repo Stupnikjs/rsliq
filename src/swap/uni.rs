@@ -1,7 +1,7 @@
 // src/swap/uniswap.rs
 use std::time::{Duration, Instant};
 use alloy::primitives::{Address, U256, Bytes};
-use crate::swap::types::PoolEdge;
+use crate::swap::PoolEdge;
 use crate::connector::Connector;
 use crate::onchain::encode::{encode_address, encode_uint256,selector}; 
 

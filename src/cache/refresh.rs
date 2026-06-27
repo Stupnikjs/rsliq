@@ -1,7 +1,7 @@
 use std::time::Duration;
 use crate::api::fetch_all_positions; 
 use crate::api::pos::position_item_to_borrow_pos; 
-use crate::cache::MarketCache; 
+use crate::cache::{MarketCache, BorrowPosition}; 
 use crate::onchain::calls::{oracle_call, market_call}; 
 use crate::connector::Connector; 
 use alloy_primitives::{Address,FixedBytes};
@@ -16,14 +16,18 @@ impl MarketCache {
         .for_each_concurrent(5, |id| async move {
             if let Ok(positions) = fetch_all_positions(id, chain_id).await {
                 if positions.len() > 10 {
-                    let borrow_pos_arr = positions
+                    let borrow_pos_arr: Vec<BorrowPosition> = positions
                         .into_iter()
                         .map(|p| position_item_to_borrow_pos(p, id))
-                        .filter(|p| p.borrow_assets_usd > 1)
+                        .filter(|p| p.borrow_assets_usd > 1.0)
                         .collect();
 
                     self.update(id, |m| {
                         m.positions = borrow_pos_arr;
+                    });
+                } else {
+                     self.update(id, |m| {
+                        m.canceled = true; 
                     });
                 }
             }
@@ -37,8 +41,15 @@ impl MarketCache {
     ) -> Result<(), anyhow::Error> {
         let params = self.get_market_param_by_id(market_id)
             .ok_or(anyhow::anyhow!("market not found"))?;
+         
+       let price = oracle_call(conn, params.oracle).await;
 
-        let price = oracle_call(conn, params.oracle).await?;
+match &price {
+    Ok(p) => println!("oracle price: {:?}", p),
+    Err(e) => println!("oracle call failed: {:?}", e),
+}
+
+let price = price?;  // propage l'erreur proprement, pas de expect
 
         self.update(market_id, |m| {
             m.stats.oracle_price = price;
@@ -47,7 +58,7 @@ impl MarketCache {
         Ok(())
     }
 
-    pub async fn onchain_market_refresh<H: Provider<Ethereum>, W: Provider>(
+    pub async fn onchain_market_refresh(
         &self,
         conn: &Connector,
         morpho_addr:Address,

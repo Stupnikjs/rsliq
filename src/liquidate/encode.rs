@@ -1,25 +1,12 @@
 // src/abi/liquidate.rs
 use alloy::primitives::{Address, Bytes, U256};
 use crate::onchain::encode::{encode_address, encode_uint256, selector};
+use crate::morpho::types::MarketParam; 
+use crate::swap::SwapStep;
 
-pub struct MarketParams {
-    pub loan_token: Address,
-    pub collateral_token: Address,
-    pub oracle: Address,
-    pub irm: Address,
-    pub lltv: U256,
-}
-
-pub struct SwapStep {
-    pub target: Address,
-    pub data: Bytes,
-    pub token_in: Address,
-    pub token_out: Address,
-    pub amount_in_offset: U256,
-}
 
 // encode un tuple fixe MarketParams → 5 slots de 32 bytes
-fn encode_market_params(mp: &MarketParams) -> Vec<u8> {
+fn encode_market_params(mp: &MarketParam) -> Vec<u8> {
     let mut out = Vec::with_capacity(5 * 32);
     out.extend_from_slice(&encode_address(mp.loan_token));
     out.extend_from_slice(&encode_address(mp.collateral_token));
@@ -58,7 +45,7 @@ fn encode_swap_step(step: &SwapStep, base_offset: usize) -> (Vec<u8>, Vec<u8>) {
 }
 
 // encode SwapStep[] complet
-fn encode_steps(steps: &[SwapStep]) -> Vec<u8> {
+fn encode_steps(steps: Vec<SwapStep>) -> Vec<u8> {
     let n = steps.len();
     // layout array: len(32) | offset_0(32) | ... | offset_n-1(32) | tuple_0 | ... | tuple_n-1
     let mut heads: Vec<u8> = Vec::new();
@@ -70,7 +57,7 @@ fn encode_steps(steps: &[SwapStep]) -> Vec<u8> {
 
     for step in steps {
         let base_offset = head_area + tails.len();
-        let (head, tail) = encode_swap_step(step, base_offset);
+        let (head, tail) = encode_swap_step(&step, base_offset);
         heads.extend_from_slice(&head);
         tails.extend_from_slice(&tail);
     }
@@ -83,11 +70,11 @@ fn encode_steps(steps: &[SwapStep]) -> Vec<u8> {
 }
 
 pub fn encode_liquidate(
-    market_params: &MarketParams,
+    market_param: &MarketParam,
     borrower: Address,
     seized_assets: U256,
     repaid_shares: U256,
-    steps: &[SwapStep],
+    steps: Vec<SwapStep>,
     min_out: U256,
 ) -> Bytes {
     // selector: liquidate((address,address,address,address,uint256),address,uint256,uint256,(address,bytes,address,address,uint256)[],uint256)
@@ -107,7 +94,7 @@ pub fn encode_liquidate(
     // head area: mp(160) + borrower(32) + seized(32) + repaid(32) + steps_offset(32) + minout(32) = 320
     let steps_offset: usize = 320; // offset depuis début des args
 
-    let mp_encoded = encode_market_params(market_params);
+    let mp_encoded = encode_market_params(market_param);
     let steps_encoded = encode_steps(steps);
 
     let mut args = Vec::new();
