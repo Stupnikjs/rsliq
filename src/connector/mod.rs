@@ -1,5 +1,5 @@
 use alloy::network::Ethereum;
-use alloy::providers::{Provider, ProviderBuilder, RootProvider};
+use alloy::providers::{ProviderBuilder, RootProvider};
 use alloy::transports::{BoxTransport, ws::WsConnect};
 use alloy::rpc::types::{Filter, BlockNumberOrTag, Log};
 use alloy::primitives::{Address, Bytes};
