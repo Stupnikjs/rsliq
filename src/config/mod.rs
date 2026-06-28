@@ -25,12 +25,13 @@ pub fn load_base_config() -> Result<Config, anyhow::Error> {
     dotenvy::dotenv().ok();
     Ok(Config {
         chain_id: 8453,
-        main_rpc: var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set"),
+        main_rpc:String::from_str("https://lb.drpc.live/base/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv")?,  // var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set") ,
         second_rpc: String::new(),
-        ws_rpc: var("BASE_WS_ALCH").expect("BASE_WS_ALCH not set"),
+        ws_rpc: String::from_str("wss://lb.drpc.live/base/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv")?,
         morpho_addr: config::address::MORPHO_MAINNET,
         liquidator_addr: config::address::BASE_LIQUIDATOR_LAST,
         dexes: vec![],
-        signer: Arc::new(PrivateKeySigner::from_str(&var("PRIV_K")?)?),
+        signer: Arc::new(PrivateKeySigner::from_str("ca9a3a3d4026e6228713e683a9c45ef65a538b2f9336813bd597f5effa38668d")?)
+        // signer: Arc::new(PrivateKeySigner::from_str(&var("PRIV_K")?)?),
     })
 }

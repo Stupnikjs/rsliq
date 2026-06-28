@@ -7,12 +7,15 @@ use crate::config::{Config, load_base_config};
 use crate::connector::{self, Connector};
 use crate::cache::{MarketCache, WAD};
 use crate::api::market::fetch_all_market_by_chainid;
-use crate::liquidate; 
+use crate::liquidate;
+use crate::swap::routes; 
+use crate::swap::routes::RouteCache;
 
 pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
     connector: Arc<Connector>,
+    routes: Arc<RouteCache>,
 }
 
 impl Runner {
@@ -24,7 +27,8 @@ impl Runner {
 
         let cache = Arc::new(MarketCache::new(&[]));
         let connector = Arc::new(connector::build(&config.main_rpc, &config.ws_rpc).await?);
-        Ok(Self { config, cache, connector })
+        let routes = Arc::new(routes::new(vec![])); 
+        Ok(Self { config, cache, connector, routes })
     }
 
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {

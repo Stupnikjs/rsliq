@@ -3,7 +3,7 @@ use std::time::Instant;
 use crate::morpho::types::{MarketParam}; 
 
 pub mod uni;
-
+pub mod routes; 
 pub trait Dex: Send + Sync {
     fn best_amount_in(
         &self,

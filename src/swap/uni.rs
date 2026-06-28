@@ -96,12 +96,11 @@ impl UniswapV3 {
         fee: u32,
     ) -> Option<PoolEdge> {
         // TODO: encoder quoteExactInputSingle + eth_call + décoder amountOut
-        let amount_out = self.eth_call_quote(connector, token_in, token_out, amount_in, fee).await?;
+        let amount_out = self.eth_call_quote(connector,  token_in, token_out, amount_in, fee).await?;
 
         Some(PoolEdge {
             token_in,
             token_out,
-            quoter: self.quoter,
             router: self.router,
             fee,
             wc_slippage: compute_slippage(amount_in, amount_out, oracle_price),
@@ -114,17 +113,31 @@ impl UniswapV3 {
         })
     }
 
-    async fn eth_call_quote(
-        &self,
-        connector: &Connector,
-        token_in: Address,
-        token_out: Address,
-        amount_in: U256,
-        fee: u32,
-    ) -> Option<U256> {
-        // TODO ABI manuel
-        todo!()
+   async fn eth_call_quote(
+    &self,
+    connector: &Connector,
+    token_in: Address,
+    token_out: Address,
+    amount_in: U256,
+    fee: u32,
+) -> Option<U256> {
+    let calldata = encode_quote_single_exact_input(token_in, token_out, fee, amount_in);
+    let resp = connector.call_raw(self.quoter, calldata).await;
+    match resp {
+        Ok(bytes) => {
+            if bytes.len() < 32 {
+                return None;
+            }
+            // amountOut = premier slot du tuple retourné
+            let amount_out = U256::from_be_slice(&bytes[0..32]);
+            Some(amount_out)
+        }
+        Err(e) => {
+            println!("{:?}", e);
+            None
+        }
     }
+}
 }
 
 pub fn compute_slippage(amount_in: U256, amount_out: U256, oracle_price: U256) -> f64 {
@@ -155,6 +168,29 @@ pub fn compute_slippage(amount_in: U256, amount_out: U256, oracle_price: U256) -
 
 // exactInputSingle(address,address,uint24,address,uint256,uint256,uint160)
 // amountIn placeholder = 0, patché on-chain via amountInOffset
+
+pub fn encode_quote_single_exact_input(
+    token_in: Address,
+    token_out: Address,
+    fee: u32,
+    amount_in: U256,
+) -> Bytes {
+    let sel = selector("quoteExactInputSingle((address,address,uint256,uint24,uint160))");
+    let mut args = Vec::with_capacity(5 * 32);
+    args.extend_from_slice(&encode_address(token_in));
+    args.extend_from_slice(&encode_address(token_out));
+    args.extend_from_slice(&encode_uint256(amount_in));
+    args.extend_from_slice(&encode_uint256(U256::from(fee)));
+    args.extend_from_slice(&encode_uint256(U256::ZERO)); // sqrtPriceLimitX96
+
+    let mut out = Vec::with_capacity(4 + args.len());
+    out.extend_from_slice(&sel);
+    out.extend_from_slice(&args);
+    out.into()
+}
+
+
+
 pub fn encode_exact_input_single_uni(
     token_in: Address,
     token_out: Address,
