@@ -2,25 +2,35 @@ use crate::api::types::{MarketItem,MarketsResult};
 use crate::api::HttpClient;
 use crate::api::queries::markets_query;
 use crate::morpho::types::{MarketParam}; 
+use serde_json::to_string_pretty;
 use std::str::FromStr;
 use alloy_primitives::{Address, U256, FixedBytes};
+use std::fs;
 
-pub async fn fetch_all_market(
-    chain_id: u32,
-) -> anyhow::Result<Vec<MarketItem>> {
-   
+const MARKETS_CACHE: &str = "data/markets.json";
+
+pub async fn fetch_all_market(chain_id: u32) -> anyhow::Result<Vec<MarketItem>> {
     let client = HttpClient::new();
-    let mut all = Vec::new();
-    use serde_json::Value;
-    let result = client
-    .query(&markets_query(chain_id))
-    .await?;
-   
+    
+    let result = client.query(&markets_query(chain_id)).await?;
     let markets: MarketsResult = serde_json::from_value(result)?;
+    
+    // sauvegarde
+    fs::create_dir_all("data")?;
+    fs::write(MARKETS_CACHE, to_string_pretty(&markets.markets.items)?)?;
+    
+    Ok(markets.markets.items)
+}
 
-    all.extend(markets.markets.items); 
-      
-    Ok(all)
+pub async fn fetch_or_load_markets(chain_id: u32) -> anyhow::Result<Vec<MarketItem>> {
+    match fetch_all_market(chain_id).await {
+        Ok(markets) => Ok(markets),
+        Err(e) => {
+            eprintln!("API error: {e}, loading from cache...");
+            let json = fs::read_to_string(MARKETS_CACHE)?;
+            Ok(serde_json::from_str(&json)?)
+        }
+    }
 }
 
 

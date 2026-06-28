@@ -1,11 +1,11 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 // api/number.rs
-use serde::{Deserialize, Deserializer, de::Error};
+use serde::{Deserialize, Deserializer, Serialize, de::Error};
 use std::fmt;
 
 /// Équivalent de json.Number : garde le texte brut, accepte
 /// aussi bien un nombre JSON qu'une string JSON.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Number(pub String);
 
 impl Number {

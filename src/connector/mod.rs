@@ -1,8 +1,10 @@
 use alloy::network::Ethereum;
 use alloy::providers::{ProviderBuilder, RootProvider};
-use alloy::transports::{BoxTransport, ws::WsConnect};
+use alloy::transports::{BoxTransport};
 use alloy::rpc::types::{Filter, BlockNumberOrTag, Log};
+use alloy::rpc::client::WsConnect;
 use alloy::primitives::{Address, Bytes};
+use alloy::providers::Provider;
 use futures::StreamExt;
 
 pub struct Connector {
@@ -32,10 +34,12 @@ impl Connector {
                 "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
                 "AccrueInterest(bytes32,uint256,uint256,uint256)",
             ]);
-        let sub = self.ws.subscribe_logs(&filter).await?;
+        let sub = self.ws.watch_logs(&filter).await?;
         let mut stream = sub.into_stream();
         while let Some(log) = stream.next().await {
-            on_log(log);
+            for l in log {
+                on_log(l);
+            }
         }
         Ok(())
     }

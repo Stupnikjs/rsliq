@@ -1,35 +1,35 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 // api/types.rs
 use super::number::Number;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Asset {
     pub address: String,
     pub symbol: String,
     pub decimals: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PageInfo {
     pub count: i32,
     #[serde(rename = "countTotal")]
     pub count_total: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PositionItem {
     pub user: PositionUser,
     pub state: PositionState,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PositionUser {
     pub address: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PositionState {
     #[serde(rename = "borrowShares")]
     pub borrow_shares: Number,
@@ -38,20 +38,20 @@ pub struct PositionState {
     pub collateral: Number,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PositionsResult {
     #[serde(rename = "marketPositions")]
     pub market_positions: MarketPositions,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketPositions {
     pub items: Vec<PositionItem>,
     #[serde(rename = "pageInfo")]
     pub page_info: PageInfo,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketItem {
     #[serde(rename = "marketId")]
     pub id: String,
@@ -69,7 +69,7 @@ pub struct MarketItem {
     pub state: MarketState,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketState {
     #[serde(rename = "supplyAssetsUsd")]
     pub supply_assets_usd: Number,
@@ -77,17 +77,17 @@ pub struct MarketState {
     pub borrow_assets_usd: Number,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketsResult {
     pub markets: MarketsInner,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MarketsInner {
     pub items: Vec<MarketItem>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LiquidationItem {
     pub hash: String,
     pub timestamp: Number,
@@ -96,7 +96,7 @@ pub struct LiquidationItem {
     pub data: LiquidationData,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LiquidationData {
     #[serde(rename = "seizedAssets")]
     pub seized_assets: Number,
@@ -112,7 +112,7 @@ pub struct LiquidationData {
     pub market: LiquidationMarket,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LiquidationMarket {
     #[serde(rename = "marketId")]
     pub market_id: String,
@@ -122,12 +122,12 @@ pub struct LiquidationMarket {
     pub collateral_asset: Asset,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LiquidationsResult {
     pub transactions: LiquidationTransactions,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LiquidationTransactions {
     pub items: Vec<LiquidationItem>,
     #[serde(rename = "pageInfo")]

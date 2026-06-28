@@ -1,6 +1,4 @@
 use alloy::primitives::{Address, U256};
-use alloy::rpc::types::trace::geth::call;
-use alloy::sol_types::SolType;
 use alloy::sol_types::sol_data::{self, FixedBytes};
 use crate::connector::Connector; 
 use alloy::providers::Provider;
