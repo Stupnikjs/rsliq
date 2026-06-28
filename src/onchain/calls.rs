@@ -51,7 +51,6 @@ pub fn decode_market_stats(data: &[u8]) -> Result<MarketStatsCall, anyhow::Error
 
 pub fn decode_oracle_price(data: &[u8])-> Result<U256,anyhow::Error> {
     if data.len() < 32 {
-         print!("{}", data.len());
         return Err(anyhow::anyhow!("response too short"));
     }
     Ok(U256::from_be_slice(data))
@@ -69,7 +68,6 @@ pub async  fn market_call(conn: &Connector, morpho_addr:Address, market_id: &[u8
 pub async fn oracle_call(conn: &Connector, oracle_addr: Address) -> Result<U256, anyhow::Error> {
     let selector = selector("price()");
     let calldata = encode_calldata(selector, &[]);
-    println!("{}", oracle_addr.to_string()); 
     let resp = conn.call_raw(oracle_addr, calldata).await
         .map_err(|e| anyhow::anyhow!("oracle_call failed for {}: {:?}", oracle_addr, e))?;
     

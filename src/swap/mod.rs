@@ -1,21 +1,13 @@
 use alloy::primitives::{Address, U256};
 use std::time::Instant;
 use crate::morpho::types::{MarketParam}; 
+use crate::swap::abi::uni::encode_exact_input_single_uni; 
+use crate::swap::abi::pankake::encode_exact_input_single_pancake; 
 
-pub mod uni;
+pub mod quoter;
 pub mod routes; 
-pub trait Dex: Send + Sync {
-    fn best_amount_in(
-        &self,
-        market: MarketParam,
-        amount_in: U256,
-        oracle_price: U256,
-    ) -> Option<PoolEdge>;
+pub mod abi; 
 
-    fn dex_name(&self) -> &str;
-    fn quoter_address(&self) -> Address;
-    fn router_address(&self) -> Address;
-}
 
 
 
@@ -32,7 +24,6 @@ pub struct SwapStep {
 pub struct PoolEdge {
     pub token_in: Address,
     pub token_out: Address,
-    pub quoter: Address,
     pub router: Address,
     pub fee: u32,
     pub wc_slippage: f64,

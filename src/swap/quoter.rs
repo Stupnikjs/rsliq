@@ -4,18 +4,19 @@ use alloy::primitives::{Address, U256, Bytes};
 use crate::swap::PoolEdge;
 use crate::connector::Connector;
 use crate::onchain::encode::{encode_address, encode_uint256,selector}; 
+use crate::swap::abi::uni::encode_quote_single_exact_input; 
 
 const UNI_FEES: [u32; 4] = [100, 500, 3000, 10000];
 
 pub struct UniswapV3 {
     pub quoter: Address,
     pub router: Address,
-    pub rate_limit: Duration,
+    pub rate_limit: u64,
     pub name: String,
 }
 
 impl UniswapV3 {
-    pub fn new(quoter: Address, router: Address, rate_limit: Duration, name: String) -> Self {
+    pub fn new(quoter: Address, router: Address, rate_limit: u64, name: String) -> Self {
         Self { quoter, router, rate_limit, name }
     }
 
@@ -33,7 +34,7 @@ impl UniswapV3 {
         let mut hi = amount_in;
         let mut best: Option<PoolEdge> = None;
 
-        for _ in 0..12 {
+        for _ in 0..6 {
             if lo > hi { break; }
             let mid = (lo + hi) >> 1;
 
@@ -65,11 +66,12 @@ impl UniswapV3 {
         let mut best: Option<PoolEdge> = None;
 
         for &fee in &UNI_FEES {
-            tokio::time::sleep(self.rate_limit).await;
+            tokio::time::sleep(Duration::from_millis(self.rate_limit)).await;
 
-            let edge = self.quote_call(
+            let Some(edge) = self.quote_call(
                 connector, token_in, token_out, amount_in, oracle_price, fee,
-            ).await?;
+            ).await else { continue }; 
+            
 
             if edge.wc_slippage > max_slippage {
                 continue;
@@ -97,6 +99,7 @@ impl UniswapV3 {
     ) -> Option<PoolEdge> {
         // TODO: encoder quoteExactInputSingle + eth_call + décoder amountOut
         let amount_out = self.eth_call_quote(connector,  token_in, token_out, amount_in, fee).await?;
+     
 
         Some(PoolEdge {
             token_in,
@@ -163,76 +166,3 @@ pub fn compute_slippage(amount_in: U256, amount_out: U256, oracle_price: U256) -
 
 
 
-
-// ── encoders DEX ─────────────────────────────────────────────────
-
-// exactInputSingle(address,address,uint24,address,uint256,uint256,uint160)
-// amountIn placeholder = 0, patché on-chain via amountInOffset
-
-pub fn encode_quote_single_exact_input(
-    token_in: Address,
-    token_out: Address,
-    fee: u32,
-    amount_in: U256,
-) -> Bytes {
-    let sel = selector("quoteExactInputSingle((address,address,uint256,uint24,uint160))");
-    let mut args = Vec::with_capacity(5 * 32);
-    args.extend_from_slice(&encode_address(token_in));
-    args.extend_from_slice(&encode_address(token_out));
-    args.extend_from_slice(&encode_uint256(amount_in));
-    args.extend_from_slice(&encode_uint256(U256::from(fee)));
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // sqrtPriceLimitX96
-
-    let mut out = Vec::with_capacity(4 + args.len());
-    out.extend_from_slice(&sel);
-    out.extend_from_slice(&args);
-    out.into()
-}
-
-
-
-pub fn encode_exact_input_single_uni(
-    token_in: Address,
-    token_out: Address,
-    fee: u32,
-    recipient: Address,
-) -> Bytes {
-    let sel = selector("exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))");
-    let mut args = Vec::with_capacity(7 * 32);
-    args.extend_from_slice(&encode_address(token_in));
-    args.extend_from_slice(&encode_address(token_out));
-    args.extend_from_slice(&encode_uint256(U256::from(fee)));
-    args.extend_from_slice(&encode_address(recipient));
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // amountIn placeholder
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // amountOutMinimum
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // sqrtPriceLimitX96
-
-    let mut out = Vec::with_capacity(4 + args.len());
-    out.extend_from_slice(&sel);
-    out.extend_from_slice(&args);
-    out.into()
-}
-
-// exactInputSingle(address,address,uint24,address,uint256,uint256,uint256,uint160) — avec deadline
-pub fn encode_exact_input_single_pancake(
-    token_in: Address,
-    token_out: Address,
-    fee: u32,
-    recipient: Address,
-) -> Bytes {
-    let sel = selector("exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))");
-    let mut args = Vec::with_capacity(8 * 32);
-    args.extend_from_slice(&encode_address(token_in));
-    args.extend_from_slice(&encode_address(token_out));
-    args.extend_from_slice(&encode_uint256(U256::from(fee)));
-    args.extend_from_slice(&encode_address(recipient));
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // deadline placeholder
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // amountIn placeholder
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // amountOutMinimum
-    args.extend_from_slice(&encode_uint256(U256::ZERO)); // sqrtPriceLimitX96
-
-    let mut out = Vec::with_capacity(4 + args.len());
-    out.extend_from_slice(&sel);
-    out.extend_from_slice(&args);
-    out.into()
-}

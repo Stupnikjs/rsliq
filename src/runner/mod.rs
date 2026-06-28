@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::str::FromStr;
 use alloy::signers::local::PrivateKeySigner;
 use tokio::time::Duration;
@@ -8,14 +8,15 @@ use crate::connector::{self, Connector};
 use crate::cache::{MarketCache, WAD};
 use crate::api::market::fetch_all_market_by_chainid;
 use crate::liquidate;
-use crate::swap::routes; 
+use crate::swap::routes::{self, new}; 
 use crate::swap::routes::RouteCache;
+use crate::swap::quoter::UniswapV3;
 
 pub struct Runner {
     config: Config,
     cache: Arc<MarketCache>,
     connector: Arc<Connector>,
-    routes: Arc<RouteCache>,
+    routes: Arc<RwLock<RouteCache>>,
 }
 
 impl Runner {
@@ -27,16 +28,30 @@ impl Runner {
 
         let cache = Arc::new(MarketCache::new(&[]));
         let connector = Arc::new(connector::build(&config.main_rpc, &config.ws_rpc).await?);
-        let routes = Arc::new(routes::new(vec![])); 
+        let routes = Arc::new(RwLock::new(routes::new())); 
         Ok(Self { config, cache, connector, routes })
     }
 
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let markets = fetch_all_market_by_chainid(self.config.chain_id).await?;
-        
         self.cache = Arc::new(MarketCache::new(&markets));
         self.cache.api_refresh(self.config.chain_id).await;
+        let routes_cache = Arc::clone(&self.routes);
         println!("{} markets watched", self.cache.ids().len());
+        for id in self.cache.ids() {
+            let _ = self.cache.onchain_oracle_refresh(&self.connector, id); 
+            let param = self.cache.get_market_param_by_id(id).expect("error in runner init get market param"); 
+            let swaper = UniswapV3::new(self.config.dexes[0].quoter, self.config.dexes[0].router, 1800, String::from_str("uniswapv3" )?); 
+            let snap = self.cache.snapshot(id).expect("snap failed in quote init"); 
+            let edge = swaper.best_amount_in(&self.connector, param.collateral_token, param.loan_token, snap.stats.max_collateral_pos, snap.stats.oracle_price, param.max_slippage()).await; 
+            let Some(edge) = edge else {
+            self.cache.update(id, |m| m.canceled = true);
+            continue;
+            };
+            let mut route_cache = self.routes.write().unwrap(); 
+            route_cache.edges.push(edge);
+        }
+        println!("{:?}", routes_cache.read().unwrap().edges); 
         Ok(())
     }
 

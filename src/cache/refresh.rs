@@ -4,7 +4,7 @@ use crate::api::pos::position_item_to_borrow_pos;
 use crate::cache::{MarketCache, BorrowPosition}; 
 use crate::onchain::calls::{oracle_call, market_call}; 
 use crate::connector::Connector; 
-use alloy_primitives::{Address,FixedBytes};
+use alloy_primitives::{Address, FixedBytes, U256};
 use alloy::providers::Provider;
 use alloy::network::Ethereum;
 use futures::stream::{self, StreamExt};
@@ -21,9 +21,15 @@ impl MarketCache {
                         .map(|p| position_item_to_borrow_pos(p, id))
                         .filter(|p| p.borrow_assets_usd > 1.0)
                         .collect();
+                    let max_collateral_pos = borrow_pos_arr
+                        .iter()
+                        .map(|p| p.collateral_assets)
+                        .max()
+                        .unwrap_or(U256::ZERO);
 
                     self.update(id, |m| {
                         m.positions = borrow_pos_arr;
+                        m.stats.max_collateral_pos = max_collateral_pos;
                     });
                 } else {
                      self.update(id, |m| {
@@ -42,14 +48,7 @@ impl MarketCache {
         let params = self.get_market_param_by_id(market_id)
             .ok_or(anyhow::anyhow!("market not found"))?;
          
-       let price = oracle_call(conn, params.oracle).await;
-
-match &price {
-    Ok(p) => println!("oracle price: {:?}", p),
-    Err(e) => println!("oracle call failed: {:?}", e),
-}
-
-let price = price?;  // propage l'erreur proprement, pas de expect
+       let price = oracle_call(conn, params.oracle).await?;
 
         self.update(market_id, |m| {
             m.stats.oracle_price = price;

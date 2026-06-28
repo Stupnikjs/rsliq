@@ -3,9 +3,17 @@ use crate::swap::PoolEdge;
 
 
 pub struct  RouteCache  {
+    pub edges: Vec<PoolEdge>,
+}
+
+pub fn new() -> RouteCache {
+    RouteCache {  edges: vec![]} 
+
 
 }
 
-pub fn new(edges: Vec<PoolEdge>) -> RouteCache {
-    RouteCache {  }
+
+impl  RouteCache {
+
+    
 }
