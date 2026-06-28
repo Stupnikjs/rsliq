@@ -39,7 +39,7 @@ impl Runner {
         let routes_cache = Arc::clone(&self.routes);
         println!("{} markets watched", self.cache.ids().len());
         for id in self.cache.ids() {
-            let _ = self.cache.onchain_oracle_refresh(&self.connector, id); 
+            let _ = self.cache.onchain_oracle_refresh(&self.connector, id).await; 
             let param = self.cache.get_market_param_by_id(id).expect("error in runner init get market param"); 
             let swaper = UniswapV3::new(self.config.dexes[0].quoter, self.config.dexes[0].router, 1800, String::from_str("uniswapv3" )?); 
             let snap = self.cache.snapshot(id).expect("snap failed in quote init"); 
