@@ -9,7 +9,8 @@ use futures::StreamExt;
 
 pub struct Connector {
     pub http: RootProvider<Ethereum>,
-    pub ws: RootProvider<Ethereum>,
+    pub ws: Box<dyn Provider>,
+
 }
 
 impl Connector {
@@ -34,12 +35,11 @@ impl Connector {
                 "Liquidate(bytes32,address,address,uint256,uint256,uint256,uint256,uint256)",
                 "AccrueInterest(bytes32,uint256,uint256,uint256)",
             ]);
-        let sub = self.ws.watch_logs(&filter).await?;
+        let sub = self.ws.subscribe_logs(&filter).await?;
         let mut stream = sub.into_stream();
         while let Some(log) = stream.next().await {
-            for l in log {
-                on_log(l);
-            }
+          on_log(log);
+        
         }
         Ok(())
     }
@@ -47,9 +47,11 @@ impl Connector {
 
 pub async fn build(http_url: &str, ws_url: &str) -> Result<Connector, Box<dyn std::error::Error>> {
     let http = RootProvider::<Ethereum>::new_http(http_url.parse()?);
-    let ws = ProviderBuilder::new()
-        .disable_recommended_fillers()
-        .connect_ws(WsConnect::new(ws_url))
-        .await?;
+    let ws = Box::new(
+        ProviderBuilder::new()
+            .disable_recommended_fillers()
+            .connect_ws(WsConnect::new(ws_url))
+            .await?
+    );
     Ok(Connector { http, ws })
 }

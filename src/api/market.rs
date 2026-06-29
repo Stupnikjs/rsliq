@@ -17,7 +17,7 @@ pub async fn fetch_all_market(chain_id: u32) -> anyhow::Result<Vec<MarketItem>> 
     
     // sauvegarde
     fs::create_dir_all("data")?;
-    fs::write(MARKETS_CACHE, to_string_pretty(&markets.markets.items)?)?;
+    fs::write(MARKETS_CACHE, to_string_pretty(&markets.markets.items[0..5])?)?;
     
     Ok(markets.markets.items)
 }
@@ -31,6 +31,11 @@ pub async fn fetch_or_load_markets(chain_id: u32) -> anyhow::Result<Vec<MarketIt
             Ok(serde_json::from_str(&json)?)
         }
     }
+}
+
+pub async fn load_market(chain_id: u32) -> anyhow::Result<Vec<MarketItem>> {
+    let json = fs::read_to_string(MARKETS_CACHE)?;
+    Ok(serde_json::from_str(&json)?)
 }
 
 
@@ -79,7 +84,7 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
 
 
  pub async fn fetch_all_market_by_chainid(chain_id: u32) -> anyhow::Result<Vec<MarketParam>> {
-     let market_result = fetch_all_market(chain_id).await;
+     let market_result = load_market(chain_id).await;    // for testing
     let mut all_markets = Vec::new();
     
     match market_result {
@@ -100,7 +105,7 @@ pub fn market_item_to_morpho_market(item: &MarketItem, chain_id: u32) -> Result<
 
     let mut all_morpho_markets:Vec<MarketParam> = Vec::new();
     
-    for m in &all_markets[0..30] {
+    for m in &all_markets {
         let usd: f64 = m.state.borrow_assets_usd.parse_f64().unwrap_or(0.0);
         if usd < 10_000.0 {
         continue;
