@@ -6,11 +6,15 @@ use alloy::rpc::client::WsConnect;
 use alloy::primitives::{Address, Bytes};
 use alloy::providers::Provider;
 use futures::StreamExt;
+use alloy::consensus::{TxEip1559, SignableTransaction};
+use alloy::network::TxSignerSync;
+use alloy::primitives::{Address, Bytes, TxHash, U256};
+use alloy::signers::local::PrivateKeySigner;
 
 pub struct Connector {
     pub http: RootProvider<Ethereum>,
     pub ws: Box<dyn Provider>,
-
+    pub signer: PrivateKeySigner,
 }
 
 impl Connector {
@@ -43,9 +47,62 @@ impl Connector {
         }
         Ok(())
     }
+     pub async fn send_tx(&self, to: Address, data: Bytes) -> Result<TxHash, Box<dyn std::error::Error>> {
+        let from = self.signer.address();
+        
+        // nonce
+        let nonce = self.http.get_transaction_count(from).await?;
+        
+        // gas
+        let base_fee = self.http
+            .get_block_by_number(BlockNumberOrTag::Latest)
+            .await?
+            .unwrap()
+            .header
+            .base_fee_per_gas
+            .unwrap();
+        
+        let max_priority_fee = 1_000_000u128; // 0.001 gwei
+        let max_fee = base_fee as u128 + max_priority_fee;
+
+        // estimate gas
+        let tx_req = TransactionRequest::default()
+            .from(from)
+            .to(to)
+            .input(data.clone().into());
+        let gas_limit = self.http.estimate_gas(tx_req).await?;
+
+        // build tx
+        let mut tx = TxEip1559 {
+            chain_id: 8453, // Base
+            nonce,
+            max_fee_per_gas: max_fee,
+            max_priority_fee_per_gas: max_priority_fee,
+            gas_limit,
+            to: alloy::primitives::TxKind::Call(to),
+            value: U256::ZERO,
+            input: data,
+            access_list: Default::default(),
+        };
+
+        // sign
+        let sig = self.signer.sign_transaction_sync(&mut tx)?;
+        let signed = tx.into_signed(sig);
+        
+        // encode + send
+        let mut buf = vec![];
+        signed.encode_2718(&mut buf);
+        let pending = self.http.send_raw_transaction(&buf).await?;
+        let receipt = pending.get_receipt().await?;
+        
+        Ok(receipt.transaction_hash)
+    }
 }
 
-pub async fn build(http_url: &str, ws_url: &str) -> Result<Connector, Box<dyn std::error::Error>> {
+}
+
+pub async fn build(http_url: &str, ws_url: &str, private_key: &str) -> Result<Connector, Box<dyn std::error::Error>> {
+    let signer: PrivateKeySigner = private_key.parse()?;
     let http = RootProvider::<Ethereum>::new_http(http_url.parse()?);
     let ws = Box::new(
         ProviderBuilder::new()
@@ -53,5 +110,5 @@ pub async fn build(http_url: &str, ws_url: &str) -> Result<Connector, Box<dyn st
             .connect_ws(WsConnect::new(ws_url))
             .await?
     );
-    Ok(Connector { http, ws })
+    Ok(Connector { http, ws, signer  })
 }
