@@ -1,18 +1,31 @@
+use std::collections::HashMap;
+
+use alloy_primitives::FixedBytes;
+
 use crate::swap::PoolEdge;
 
 pub struct SwapRoute {
 
 }
 
-pub struct  RouteCache  {
+pub struct RouteCache {
     pub edges: Vec<PoolEdge>,
-    pub graph: u64,  // to implement
+    pub graph: HashMap<FixedBytes<32>, PoolEdge>,
 }
 
-pub fn new() -> RouteCache {
-    RouteCache {  edges: vec![], graph:0 } 
-}
+impl RouteCache {
+    pub fn new() -> Self {
+        RouteCache {
+            edges: vec![],
+            graph: HashMap::new(),
+        }
+    }
 
+    pub fn insert_edge(&mut self, key: FixedBytes<32>, edge: PoolEdge) {
+        self.graph.insert(key, edge);
+    }
 
-impl  RouteCache {
+    pub fn get_edge(&self, key: &FixedBytes<32>) -> Option<&PoolEdge> {
+        self.graph.get(key)
+    }
 }

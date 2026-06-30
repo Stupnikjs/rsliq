@@ -28,7 +28,7 @@ pub struct Config {
     pub morpho_addr: Address,
     pub liquidator_addr: Address,
     pub dexes: Vec<DexConfig>,
-    pub signer: Arc<PrivateKeySigner>, 
+    pub signer: PrivateKeySigner, 
 }
 
 
@@ -49,7 +49,7 @@ pub fn load_base_config() -> Result<Config, anyhow::Error> {
         morpho_addr: config::address::MORPHO_MAINNET,
         liquidator_addr: config::address::BASE_LIQUIDATOR_LAST,
         dexes: vec![new_dex_config(address::BASE_UNISWAP_QUOTER_V2, address::BASE_UNISWAP_V3_ROUTER, DexesName::UniswapV3)] ,
-        signer: Arc::new(PrivateKeySigner::from_str("ca9a3a3d4026e6228713e683a9c45ef65a538b2f9336813bd597f5effa38668d")?)
+        signer: PrivateKeySigner::from_str("ca9a3a3d4026e6228713e683a9c45ef65a538b2f9336813bd597f5effa38668d")?
         // signer: Arc::new(PrivateKeySigner::from_str(&var("PRIV_K")?)?),
     })
 }

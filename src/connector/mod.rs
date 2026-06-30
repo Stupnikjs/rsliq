@@ -1,10 +1,8 @@
 use alloy::network::Ethereum;
-use alloy::providers::{ProviderBuilder, RootProvider};
+use alloy::providers::{Provider, ProviderBuilder, RootProvider};
 use alloy::transports::{BoxTransport};
-use alloy::rpc::types::{Filter, BlockNumberOrTag, Log};
+use alloy::rpc::types::{BlockNumberOrTag, Filter, Log, TransactionRequest};
 use alloy::rpc::client::WsConnect;
-use alloy::primitives::{Address, Bytes};
-use alloy::providers::Provider;
 use futures::StreamExt;
 use alloy::consensus::{TxEip1559, SignableTransaction};
 use alloy::network::TxSignerSync;
@@ -91,7 +89,7 @@ impl Connector {
         
         // encode + send
         let mut buf = vec![];
-        signed.encode_2718(&mut buf);
+        signed.eip2718_encode(&mut buf);
         let pending = self.http.send_raw_transaction(&buf).await?;
         let receipt = pending.get_receipt().await?;
         
@@ -99,10 +97,9 @@ impl Connector {
     }
 }
 
-}
 
-pub async fn build(http_url: &str, ws_url: &str, private_key: &str) -> Result<Connector, Box<dyn std::error::Error>> {
-    let signer: PrivateKeySigner = private_key.parse()?;
+
+pub async fn build(http_url: &str, ws_url: &str, signer: PrivateKeySigner) -> Result<Connector, Box<dyn std::error::Error>> {
     let http = RootProvider::<Ethereum>::new_http(http_url.parse()?);
     let ws = Box::new(
         ProviderBuilder::new()

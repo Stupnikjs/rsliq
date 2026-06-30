@@ -12,10 +12,10 @@ use futures::stream::{self, StreamExt};
 
 impl MarketCache {
     pub async fn api_refresh(&self, chain_id: u32) {
-         stream::iter(self.ids())
+    stream::iter(self.ids())
         .for_each_concurrent(5, |id| async move {
-            if let Ok(positions) = fetch_all_positions(id, chain_id).await {
-                if positions.len() > 10 {
+            match fetch_all_positions(id, chain_id).await {
+                Ok(positions) if positions.len() > 10 => {
                     let borrow_pos_arr: Vec<BorrowPosition> = positions
                         .into_iter()
                         .map(|p| position_item_to_borrow_pos(p, id))
@@ -31,14 +31,18 @@ impl MarketCache {
                         m.positions = borrow_pos_arr;
                         m.stats.max_collateral_pos = max_collateral_pos;
                     });
-                } else {
-                     self.update(id, |m| {
-                        m.canceled = true; 
-                    });
+                }
+                Ok(_) => {
+                    self.update(id, |m| m.canceled = true);
+                }
+                Err(e) => {
+                    eprintln!("fetch_all_positions failed for {:?}: {}", id, e);
+                    self.update(id, |m| m.canceled = true); // ou un autre statut "stale"
                 }
             }
         })
         .await;
+
     }
      pub async fn onchain_oracle_refresh(
         &self,

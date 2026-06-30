@@ -1,10 +1,36 @@
 mod encode;
-mod build; 
+mod build;
+
+use alloy_primitives::{U256, Address};
+use crate::liquidate::build::build_steps;
+use crate::swap::PoolEdge;
 use crate::{cache::positions::BorrowPosition, morpho::types::MarketParam, swap::routes::SwapRoute};
 use crate::connector::Connector;
+use crate::liquidate::encode::encode_liquidate;
 
-pub async fn liquidate(conn: &Connector, pos: BorrowPosition, route: SwapRoute, mparam: MarketParam) { 
-   // let calldata = encode()
-   // simulate 
-   // send 
+pub async fn liquidate(
+    conn: &Connector,
+    pos: BorrowPosition,
+    route: PoolEdge,
+    mparam: MarketParam,
+    liquidator_addr: Address,
+) {
+    let swap_steps: Vec<PoolEdge> = vec![route.clone()];
+
+    let steps = match build_steps(&swap_steps, liquidator_addr) {
+        Ok(steps) => steps,
+        Err(e) => {
+            eprintln!("error build step {}", e);
+            return;
+        }
+    };
+   let wc_amount_in = route.wc_amount_in; 
+    let mut seized_assets = pos.collateral_assets; // ajust with slippage
+    if seized_assets > wc_amount_in {
+        seized_assets = wc_amount_in;
+    }
+
+    let calldata = encode_liquidate(&mparam, pos.address, seized_assets, U256::ZERO, steps, U256::ZERO);
+    // simulate
+    // send
 }

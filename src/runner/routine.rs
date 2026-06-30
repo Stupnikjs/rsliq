@@ -25,8 +25,9 @@ impl Runner  {
             let cache = Arc::clone(&self.cache);
             let morpho_addr = self.config.morpho_addr.clone(); 
             let connector = Arc::clone(&self.connector);
+            let route_cache = Arc::clone(&self.route_cache); 
             let mut count = 0u64;
-
+            let liquidator_addr = self.config.liquidator_addr.clone(); 
             tokio::spawn(async move {
                 loop {
                     
@@ -41,11 +42,14 @@ impl Runner  {
                   
                     let (lowest, interval) = cache.lowest_hf_and_interval(id);
                     println!("interval {} s", interval);
-                    if let Some(pos) = lowest {
-                        if interval == 0 {
-                            liquidate::liquidate(&self.connector, pos, route, m_param ).await;
+                    if let (Some(pos), 0) = (lowest, interval) {
+                        let route = route_cache.read().unwrap().get_edge(&pos.market_id).cloned();
+                        let mparam = cache.get_market_param_by_id(pos.market_id);
+
+                        if let (Some(route), Some(mparam)) = (route, mparam) {
+                            liquidate::liquidate(&connector, pos, route, mparam, liquidator_addr).await;
                         }
-                    }
+                }
 
                     count += 1;
                     tokio::time::sleep(Duration::from_secs(interval)).await;
@@ -56,7 +60,7 @@ impl Runner  {
 
 
     pub async fn quote_market(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let routes_cache = Arc::clone(&self.routes);
+        let route_cache = Arc::clone(&self.route_cache);
         println!("{} markets watched", self.cache.ids().len());
         for id in self.cache.ids() {
             let _ = self.cache.onchain_oracle_refresh(&self.connector, id).await; 
@@ -80,10 +84,10 @@ impl Runner  {
             self.cache.update(id, |m| m.canceled = true);
             continue;
             };
-            let mut route_cache = self.routes.write().unwrap(); 
+            let mut route_cache = self.route_cache.write().unwrap(); 
             route_cache.edges.push(edge);
         }
-        println!("{:?}", routes_cache.read().unwrap().edges);
+        println!("{:?}", route_cache.read().unwrap().edges);
          Ok(())
     }
 }
