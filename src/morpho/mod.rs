@@ -2,6 +2,7 @@
 use alloy::primitives::U256;
 
 pub mod types;
+pub mod calls; 
 
 fn wad() -> U256 {
     U256::from(10u64).pow(U256::from(18))
@@ -38,20 +39,6 @@ pub fn borrow_assets_from_shares(
     pos_shares * tot_borrow_assets / tot_shares
 }
  
- 
-pub fn estimate_profit(seize_assets: U256, repay_assets: U256, gas_est: u64) -> U256 {
-    let gas_price = U256::from(3_000_000_000u64); // 3 gwei
-    let gas_cost = U256::from(gas_est) * gas_price;
- 
-    if seize_assets <= repay_assets {
-        return U256::ZERO;
-    }
-    let gross = seize_assets - repay_assets;
-    if gross <= gas_cost {
-        return U256::ZERO;
-    }
-    gross - gas_cost
-}
  
 pub fn compute_seized_asset(
     borrow_shares: U256,

@@ -5,17 +5,16 @@ mod morpho;
 mod api;
 mod cache; 
 pub mod connector;
-mod onchain;
+
 mod config;
 pub mod runner; 
 pub mod swap;
 mod liquidate;
-
+pub mod abi; 
 
 use std::sync::Arc;
 use alloy::providers::Provider;
 use tokio::time::{sleep, Duration};
-
 use crate::runner::Runner;
 
 
@@ -39,5 +38,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+
+/*   note 
+
+filter les positions suivis et exclure les pos avec hf > 1.2, 
+mais si event borrow recalcul du hf si < 1.2 => inclu dans le tracking,
+si pas de pos < 1.2 sur un marché 
+call positions pour les position proche de la liquidation pour ajuster les valeurs vs ceux de l'api 
+
+
+*/
 
 

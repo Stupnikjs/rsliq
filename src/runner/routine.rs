@@ -21,7 +21,9 @@ impl Runner  {
     }
 
     pub async fn market_loop(&self) {
+        println!("market loop {}", "here");
         for id in self.cache.ids() {
+            println!("market loop {}", "in inner loop");
             let cache = Arc::clone(&self.cache);
             let morpho_addr = self.config.morpho_addr.clone(); 
             let connector = Arc::clone(&self.connector);

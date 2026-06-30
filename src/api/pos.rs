@@ -1,11 +1,12 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 use alloy_primitives::{FixedBytes, U256, Address}; 
 use anyhow::Context;
-
+use serde_json::to_string_pretty;
+use std::fs;
 use hex;
 use tokio::runtime::Id; 
 use std::str::FromStr;
-use crate::api::types::{PositionItem, PositionsResult};
+use crate::api::types::{MarketItem, PositionItem, PositionsResult};
 use crate::api::{HttpClient, pos};
 use crate::api::queries::positions_query;
 use crate::cache::{positions::BorrowPosition, MarketCache};
@@ -33,8 +34,18 @@ pub async fn fetch_all_positions(
             break;
         }
     }
-
+     // sauvegarde
+    fs::create_dir_all("data")?;
+    let json = to_string_pretty(&all)?;
+    fs::write( format!("data/{}.json", id_string), json)?;
     Ok(all)
+}
+
+
+pub async fn load_pos_by_market_id(chain_id: u32, market_id: FixedBytes<32>) -> anyhow::Result<Vec<PositionItem>> {
+    let market_id_str = format!("0x{}", hex::encode(market_id));
+    let json = fs::read_to_string(format!("data/{}.json", market_id_str))?;
+    Ok(serde_json::from_str(&json)?)
 }
 
 

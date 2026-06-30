@@ -9,10 +9,17 @@ use alloy::network::TxSignerSync;
 use alloy::primitives::{Address, Bytes, TxHash, U256};
 use alloy::signers::local::PrivateKeySigner;
 
+use crate::connector::nonce_gas::NonceManager;
+
+mod nonce_gas;
+mod rate_limiter;
+
 pub struct Connector {
     pub http: RootProvider<Ethereum>,
     pub ws: Box<dyn Provider>,
     pub signer: PrivateKeySigner,
+    pub nonce_mgr: NonceManager,
+    pub base_fee: Arc<BaseFeeTracker>,
 }
 
 impl Connector {
@@ -40,6 +47,7 @@ impl Connector {
         let sub = self.ws.subscribe_logs(&filter).await?;
         let mut stream = sub.into_stream();
         while let Some(log) = stream.next().await {
+          println!("{:?}", log); 
           on_log(log);
         
         }
@@ -107,5 +115,8 @@ pub async fn build(http_url: &str, ws_url: &str, signer: PrivateKeySigner) -> Re
             .connect_ws(WsConnect::new(ws_url))
             .await?
     );
-    Ok(Connector { http, ws, signer  })
+     let nonce_mgr = NonceManager::init(&http, signer.address()).await?;
+        let base_fee = nonce_gas::BaseFeeTracker::new();
+        base_fee.spawn_updater(ws.clone());
+    Ok(Connector { http, ws, signer, nonce_mgr, base_fee })
 }
