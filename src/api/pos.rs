@@ -77,6 +77,7 @@ pub fn position_item_to_borrow_pos(
         borrow_assets_usd,
         collateral_assets,
         cached_hf: Some(U256::ZERO), // 0 par défaut comme demandé, le calcul se fera après
+        onchain_checked: false,
     }
 }
 
