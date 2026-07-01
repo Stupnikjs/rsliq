@@ -16,8 +16,8 @@
       "decimals": 8
     },
     "state": {
-      "supplyAssetsUsd": "1366389569.6602166",
-      "borrowAssetsUsd": "1208969967.5473993"
+      "supplyAssetsUsd": "1368786513.1783044",
+      "borrowAssetsUsd": "1209587767.5242608"
     }
   },
   {
@@ -37,8 +37,8 @@
       "decimals": 18
     },
     "state": {
-      "supplyAssetsUsd": "187992297.43287212",
-      "borrowAssetsUsd": "171476965.54544863"
+      "supplyAssetsUsd": "187807314.06943783",
+      "borrowAssetsUsd": "170211917.49578708"
     }
   },
   {
@@ -58,11 +58,11 @@
       "decimals": 18
     },
     "state": {
-      "supplyAssetsUsd": "72825345.68693806",
-      "borrowAssetsUsd": "64395403.109676994"
+      "supplyAssetsUsd": "73230303.10962296",
+      "borrowAssetsUsd": "64740618.04015725"
     }
   },
-  {
+   {
     "marketId": "0xd4a903dc6d949519060c7707f9604fdc9772c046e05c2e3a8fce0bd7196e4109",
     "creationTimestamp": 1768501095,
     "oracleAddress": "0x031b2EFC8d70042Ac8d9f5c793c4149eC4b60fdE",
@@ -79,9 +79,307 @@
       "decimals": 6
     },
     "state": {
-      "supplyAssetsUsd": "33901030.34746962",
-      "borrowAssetsUsd": "29286070.353560068"
+      "supplyAssetsUsd": "33744628.366964266",
+      "borrowAssetsUsd": "29580538.989142243"
+    }
+  },
+ 
+  {
+    "marketId": "0x3a4048c64ba1b375330d376b1ce40e4047d03b47ab4d48af484edec9fec801ba",
+    "creationTimestamp": 1718096805,
+    "oracleAddress": "0x4A11590e5326138B514E08A9B52202D42077Ca65",
+    "lltv": "945000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "collateralAsset": {
+      "address": "0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+      "symbol": "wstETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "8585252.678414263",
+      "borrowAssetsUsd": "7694872.222049536"
+    }
+  },
+  {
+    "marketId": "0x67ebd84b2fb39e3bc5a13d97e4c07abe1ea617e40654826e9abce252e95f049e",
+    "creationTimestamp": 1726382847,
+    "oracleAddress": "0xA857411CB2231a6A87a3bEF987a4cED8A067d799",
+    "lltv": "860000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+      "symbol": "EURC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "symbol": "cbBTC",
+      "decimals": 8
+    },
+    "state": {
+      "supplyAssetsUsd": "5871514.965437577",
+      "borrowAssetsUsd": "5402029.237613352"
+    }
+  },
+  
+  {
+    "marketId": "0x1c21c59df9db44bf6f645d854ee710a8ca17b479451447e9f56758aee10a2fad",
+    "creationTimestamp": 1720801239,
+    "oracleAddress": "0xb40d93F44411D8C09aD17d7F88195eF9b05cCD96",
+    "lltv": "860000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "symbol": "cbETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "4877691.562939169",
+      "borrowAssetsUsd": "4307813.541696962"
+    }
+  },
+  {
+    "marketId": "0xff0f2bd52ca786a4f8149f96622885e880222d8bed12bbbf5950296be8d03f89",
+    "creationTimestamp": 1739903483,
+    "oracleAddress": "0xa40E4a5C4ff8ec8ae05648A4F34E02CeD8Ae9EFB",
+    "lltv": "915000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x35E5dB674D8e93a03d814FA0ADa70731efe8a4b9",
+      "symbol": "USR",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "4314160.154372214",
+      "borrowAssetsUsd": "4314160.154372214"
+    }
+  },
+  {
+    "marketId": "0x0ca10126f6c94cbd9cf0a48cc9516ae5e3dec5aa68303e6d988ee37c5149bf0d",
+    "creationTimestamp": 1765374229,
+    "oracleAddress": "0x97FF9CbD7E77348b2B8FfBB883bF29452aD18295",
+    "lltv": "770000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "symbol": "cbETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "4024718.9871533024",
+      "borrowAssetsUsd": "3553123.2428129683"
+    }
+  },
+ 
+  {
+    "marketId": "0x7dc02ff6c536b1d49d7fba770438d79f5bd1f1c78884629b7d1aaee19675782b",
+    "creationTimestamp": 1773472341,
+    "oracleAddress": "0xE9725430f3A72611ac72EdDc650625bce4F45DC7",
+    "lltv": "625000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x311935Cd80B76769bF2ecC9D8Ab7635b2139cf82",
+      "symbol": "SOL",
+      "decimals": 9
+    },
+    "state": {
+      "supplyAssetsUsd": "3122825.5034007677",
+      "borrowAssetsUsd": "2815115.468381072"
+    }
+  },
+  {
+    "marketId": "0x13c42741a359ac4a8aa8287d2be109dcf28344484f91185f9a79bd5a805a55ae",
+    "creationTimestamp": 1722328591,
+    "oracleAddress": "0xD7A1abA119a236Fea5BBC5cAC6836465cbe9289A",
+    "lltv": "860000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
+      "symbol": "wstETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "2022276.1044407876",
+      "borrowAssetsUsd": "1798676.7905968002"
+    }
+  },
+  {
+    "marketId": "0x73527ddd796e6d4f48387adaae36f6f3d49d606d7f2a15eb0c931416a58875d8",
+    "creationTimestamp": 1760112011,
+    "oracleAddress": "0xA9D36600Fb9eba7548857e61F836Ec951e3091B2",
+    "lltv": "625000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0xcbD06E5A2B0C65597161de254AA074E489dEb510",
+      "symbol": "cbDOGE",
+      "decimals": 8
+    },
+    "state": {
+      "supplyAssetsUsd": "1988991.241213067",
+      "borrowAssetsUsd": "1744416.9502906129"
+    }
+  },
+  {
+    "marketId": "0x84662b4f95b85d6b082b68d32cf71bb565b3f22f216a65509cc2ede7dccdfe8c",
+    "creationTimestamp": 1717262823,
+    "oracleAddress": "0xB03855Ad5AFD6B8db8091DD5551CAC4ed621d9E6",
+    "lltv": "945000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "collateralAsset": {
+      "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "symbol": "cbETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "1585445.0881509958",
+      "borrowAssetsUsd": "1416652.3957262426"
+    }
+  },
+ 
+  {
+    "marketId": "0xfd0895ba253889c243bf59bc4b96fd1e06d68631241383947b04d1c293a0cfea",
+    "creationTimestamp": 1747090669,
+    "oracleAddress": "0xcE629400c6AEdb64f087CAC40Ae6a382AEEef490",
+    "lltv": "945000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "collateralAsset": {
+      "address": "0x04C0599Ae5A44757c0af6F9eC3b93da8976c150A",
+      "symbol": "weETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "923864.28076882",
+      "borrowAssetsUsd": "757682.9395021729"
+    }
+  },
+  {
+    "marketId": "0xf2a59ad1aec67664c564cb33c33538ab41372363204ce2bdcf00900b7d28c6ab",
+    "creationTimestamp": 1760112217,
+    "oracleAddress": "0x35D87a743D1F2f7CaFb42D855dC1c5Df857Ce45f",
+    "lltv": "770000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0xcbADA732173e39521CDBE8bf59a6Dc85A9fc7b8c",
+      "symbol": "cbADA",
+      "decimals": 6
+    },
+    "state": {
+      "supplyAssetsUsd": "903522.5531656356",
+      "borrowAssetsUsd": "796890.7747887372"
+    }
+  },
+ 
+  {
+    "marketId": "0xa9b5142fa687a24c275faf731f13b52faa9873252bb4e1cb6077aa1f412edb0b",
+    "creationTimestamp": 1725966245,
+    "oracleAddress": "0xE1bb8E5b4930eC9FeC7f7943FCF6227649F14B37",
+    "lltv": "860000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+      "symbol": "EURC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "754806.4450597641",
+      "borrowAssetsUsd": "694817.7885634959"
+    }
+  },
+  {
+    "marketId": "0xdba352d93a64b17c71104cbddc6aef85cd432322a1446b5b65163cbbc615cd0c",
+    "creationTimestamp": 1715791157,
+    "oracleAddress": "0x4756c26E01E61c7c2F86b10f4316e179db8F9425",
+    "lltv": "860000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+      "symbol": "cbETH",
+      "decimals": 18
+    },
+    "state": {
+      "supplyAssetsUsd": "684967.7991894968",
+      "borrowAssetsUsd": "608516.9085172998"
+    }
+  },
+  {
+    "marketId": "0x9125d0fa03c3137166df68bcc72283477830de2a4a5536512374c573ad4583c3",
+    "creationTimestamp": 1760111901,
+    "oracleAddress": "0x47f961E6653423A77b1EF8Fb680eE53bf7d8a00d",
+    "lltv": "625000000000000000",
+    "irmAddress": "0x46415998764C29aB2a25CbeA6254146D50D22687",
+    "loanAsset": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "collateralAsset": {
+      "address": "0xcb17C9Db87B595717C857a08468793f5bAb6445F",
+      "symbol": "cbLTC",
+      "decimals": 8
+    },
+    "state": {
+      "supplyAssetsUsd": "672351.8451759068",
+      "borrowAssetsUsd": "584365.6962935718"
     }
   }
-  
 ]

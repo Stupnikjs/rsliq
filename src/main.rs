@@ -41,11 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 /*   note 
 
-filter les positions suivis et exclure les pos avec hf > 1.2, 
-mais si event borrow recalcul du hf si < 1.2 => inclu dans le tracking,
-si pas de pos < 1.2 sur un marché 
-call positions pour les position proche de la liquidation pour ajuster les valeurs vs ceux de l'api 
-
+onchain call positions sur les 6 positions les plus a risque
 
 */
 

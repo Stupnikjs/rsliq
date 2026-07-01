@@ -3,6 +3,7 @@ use alloy_primitives::{Address, FixedBytes, U256, address};
 
 // Constante vérifiée à la compilation
 pub const IRM: Address = address!("0x46415998764C29aB2a25CbeA6254146D50D22687");
+pub const WAD: U256 = U256::from_limbs([1_000_000_000_000_000_000, 0, 0, 0]);
 
 #[derive(Debug, Clone, Default)]
 pub struct MarketParam {
@@ -64,19 +65,7 @@ impl MarketParam {
     }
 
     pub fn max_slippage(&self) -> f64 {
-        // Le LLTV de Morpho possède 18 décimales (ex: 90% = 0.9 * 1e18 = 900000000000000000)
-        // On peut le convertir en f64 de manière sécurisée en le divisant par 1e14 pour obtenir un pourcentage direct
-        let lltv_factor: u64 = 100_000_000_000_000; // 1e14
-        
-        // On divise le U256 puis on extrait le résultat en u64 avant de passer en f64
-        let lltv_pct_scaled = (self.lltv / U256::from(lltv_factor)).to::<u64>();
-        
-        // On divise par 10000.0 pour retrouver le vrai pourcentage (ex: 900000 / 10000.0 = 90.0%)
-        let lltv_pct = lltv_pct_scaled as f64 / 10000.0;
-        
-        let bonus = 100.0 - lltv_pct;
-        const GAS_CUSHION: f64 = 0.1;
-        
-        bonus - GAS_CUSHION
-    }
+    let lltv_pct = self.lltv.to::<u128>() as f64 / 1e18;
+    100.0 - lltv_pct * 100.0
+}
 }

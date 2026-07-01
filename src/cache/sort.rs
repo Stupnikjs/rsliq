@@ -41,8 +41,9 @@ impl MarketCache {
     });
 }
     pub fn lowest_hf_and_interval(&self, id: FixedBytes<32>) -> (Option<BorrowPosition>, u64) {
-    let snap = self.snapshot(id).expect("snapshot market failed");
-
+    let Some(snap) = self.snapshot(id) else {
+    return (None, 3600);
+    };
     let Some(first) = snap.positions.first().cloned() else {
         return (None, 3600);
     };
@@ -62,7 +63,7 @@ impl MarketCache {
     } else if hf < WAD * U256::from(150u64) / U256::from(100u64) {
         300
     } else {
-        30 * 60
+        3600
     };
 
     (Some(first), interval)

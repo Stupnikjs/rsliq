@@ -1,0 +1,532 @@
+[
+  {
+    "user": {
+      "address": "0xfaAF20a032Aefada97278C165345B6bE1AfC18c2"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xE74c499fA461AF1844fCa84204490877787cED56"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x3094b241AaDe60F91f1c82b0628A10d9501462F9"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x72F15Db43d60861090b7db5953f07cc7e9204aB1"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xfeed46c11F57B7126a773EeC6ae9cA7aE1C03C9a"
+    },
+    "state": {
+      "borrowShares": "10490926533",
+      "borrowAssetsUsd": "0.01099221639255812",
+      "collateral": "777273"
+    }
+  },
+  {
+    "user": {
+      "address": "0x000000000000000000000000000000000000dEaD"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x000001ac4e512d670c34feDf6c71cE2F49fb160a"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x00e39304c139EBC5B03576Da1359Eb2ecfF07E75"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x011d521fAfEbC2e2f875ac08E5a82534c92dcf30"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x03FCF04d75E1c92e072eA70342891e1D52E98888"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "100000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x0a31cFcFAfF79D0f23A9A65a3850af6765122915"
+    },
+    "state": {
+      "borrowShares": "5096785757004589",
+      "borrowAssetsUsd": "5340.361407550188",
+      "collateral": "65316285357"
+    }
+  },
+  {
+    "user": {
+      "address": "0x11111111652DeB43CF2ee68065E8296249428B61"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x13a4B4F78aB4B93EC1CECf963e19f26f4214578e"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x15b406194bfC09a92A3fadc40E7091F61AD07c4C"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x1cE5B4f667B60E6E23E758fFC11D157318ec479B"
+    },
+    "state": {
+      "borrowShares": "56003204596720",
+      "borrowAssetsUsd": "58.67960001959353",
+      "collateral": "43017429750"
+    }
+  },
+  {
+    "user": {
+      "address": "0x283a4701AcA2a5B2A5db876FeA7d1e108110b555"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "390000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x2a11444bFa7E682f5dfEB89efAd40D4Cf5780299"
+    },
+    "state": {
+      "borrowShares": "71939966803205",
+      "borrowAssetsUsd": "75.37798130526154",
+      "collateral": "1654546306"
+    }
+  },
+  {
+    "user": {
+      "address": "0x44aE86D74f275Dfca4D2Aa03005ad1f3c1b36080"
+    },
+    "state": {
+      "borrowShares": "614875748274372101",
+      "borrowAssetsUsd": "644260.6915646533",
+      "collateral": "11030989346938"
+    }
+  },
+  {
+    "user": {
+      "address": "0x48Cd090C9E8a9954B0955c8b87754031d90c4955"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x4Ebc44080698167D426Fb26cA47f5Fdae7B35e4b"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x50109ffEFd6D07c82Ed34776Ef6C2BaE765Fb056"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x5505A90df41624d72cA5c0FFa0dE735F24B917BC"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x55170E414b1fCeC9DFEFc6943d39A9C34877d7A6"
+    },
+    "state": {
+      "borrowShares": "131772282913547369",
+      "borrowAssetsUsd": "138069.68701748183",
+      "collateral": "2499860066468"
+    }
+  },
+  {
+    "user": {
+      "address": "0x5801F43F77b125BeD1fecDEBDb844044ef10A46B"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x72be381236f3B2BE44Fb2ab81B67ea603F2eDd56"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x765252b47A6dCB125B671D9f7AebEDEaaEC3E3C0"
+    },
+    "state": {
+      "borrowShares": "1342835372418190",
+      "borrowAssetsUsd": "1407.0095422358925",
+      "collateral": "16469392169"
+    }
+  },
+  {
+    "user": {
+      "address": "0x767B7b36Ee5fe1eAac898522B2403d19ab9D0477"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x77732bF3Bc16F4578217d475A06D493BAeC4cfc1"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x79590299CBb77aeeB752186B9616A63230243939"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "4000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x7a0c7Aa4a989F3a888efA2b4DBC806DC90919Ac7"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x824f4840F9e2284D8EDC88576d25eDf5E9f99a1c"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x831F60741f44dC5cEd91A0888a6DB4e4FDB3Cd44"
+    },
+    "state": {
+      "borrowShares": "1705482023236642",
+      "borrowAssetsUsd": "1786.9870949700614",
+      "collateral": "20000002567"
+    }
+  },
+  {
+    "user": {
+      "address": "0x86a99293Ff0b9B84e28f6A82Ab7a06B5d81858E8"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x884dA90Dd057CF189a4E303975DEC52B70758888"
+    },
+    "state": {
+      "borrowShares": "965053439",
+      "borrowAssetsUsd": "0.0010106521255798708",
+      "collateral": "330000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x894A133b6E91FE68e06E4FDFFcf5d267e4499eEc"
+    },
+    "state": {
+      "borrowShares": "506007968388327",
+      "borrowAssetsUsd": "530.1901143875805",
+      "collateral": "10000000000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x8eDDDF80DBeedEc4bCB7B0Ad77f97E0aeeE46666"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "390000"
+    }
+  },
+  {
+    "user": {
+      "address": "0x90CC1b62F481e5214b45999c1Df8e1aE5A444e75"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0x924D53C12e04B7F74D97c9770889502D7aecc95e"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "6161229"
+    }
+  },
+  {
+    "user": {
+      "address": "0xBdBf3179DAFC2F42cB7fd8DE2418632261B47BF0"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xCBF4559Df9f52EC2b15d0Cd9Ba9E476D07f5515B"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xD648cB5301F8b01F9bac62D4ED248759225fD0C4"
+    },
+    "state": {
+      "borrowShares": "4068158789597656",
+      "borrowAssetsUsd": "4262.576304669751",
+      "collateral": "52772862562"
+    }
+  },
+  {
+    "user": {
+      "address": "0xF9324746FcDC2e018D7fEac2293490Ddbab56759"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xb8Aa8a5E09245c6D4FAf602020853dE595d9f14A"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "6814098"
+    }
+  },
+  {
+    "user": {
+      "address": "0xba5e1710d2d08E5F274b054cb977444306132Be5"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xc15c84372d0B8059E0aa86Ebd9d2786f268bAE85"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xc7666afe71d4699a9331092CCFd055846f9C6c54"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xd2f04dA681ca3661FAfA8cda07C9b40833e1761e"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xe267ab2B5F2B4Ac4F101553BA6d2936DAAf73456"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "220000"
+    }
+  },
+  {
+    "user": {
+      "address": "0xe940349CfCD320F7F3B8Ba5999D475eDA15361F3"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xf42B17cce358BF33E244D95aDa371BBB7443655b"
+    },
+    "state": {
+      "borrowShares": "0",
+      "borrowAssetsUsd": "0",
+      "collateral": "0"
+    }
+  },
+  {
+    "user": {
+      "address": "0xfB63ea0BE41DAe691dB063FCeea4659A5a20F38A"
+    },
+    "state": {
+      "borrowShares": "786332188064457",
+      "borrowAssetsUsd": "823.9110433308966",
+      "collateral": "7981682751"
+    }
+  },
+  {
+    "user": {
+      "address": "0xfF626429FeA6f7EBa44536A1d35e2d48Dadd558e"
+    },
+    "state": {
+      "borrowShares": "318753312645361",
+      "borrowAssetsUsd": "333.9865491997473",
+      "collateral": "4001002992"
+    }
+  }
+]

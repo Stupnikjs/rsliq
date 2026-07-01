@@ -1,6 +1,5 @@
 use std::time::Duration;
 use crate::api::fetch_all_positions; 
-use crate::api::market::load_market;
 use crate::api::pos::{load_pos_by_market_id, position_item_to_borrow_pos}; 
 use crate::cache::{MarketCache, BorrowPosition}; 
 use crate::morpho::calls::{oracle_call, market_call}; 
@@ -15,7 +14,7 @@ impl MarketCache {
     pub async fn api_refresh(&self, chain_id: u32) {
     stream::iter(self.ids())
         .for_each_concurrent(5, |id| async move {
-            match  load_pos_by_market_id(chain_id, id).await {// fetch_all_positions(id, chain_id).await {
+            match  fetch_all_positions(id, chain_id).await { //load_pos_by_market_id(chain_id, id).await 
                 Ok(positions) if positions.len() > 10 => {
                     let borrow_pos_arr: Vec<BorrowPosition> = positions
                         .into_iter()

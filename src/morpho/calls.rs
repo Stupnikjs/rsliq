@@ -1,5 +1,8 @@
+use std::env::Args;
+
 use alloy::primitives::{Address, U256};
 use alloy::sol_types::sol_data::{self, FixedBytes};
+use alloy_primitives::Bytes;
 use crate::connector::Connector; 
 use alloy::providers::Provider;
 use alloy::network::Ethereum;
@@ -92,19 +95,17 @@ pub async fn position_call(
     user: Address,
 ) -> Result<PositionCall, anyhow::Error> {
 
-    let selector = selector("position(bytes32,address)");
-
-    let mut calldata = Vec::new();
-    calldata.extend_from_slice(&selector);
+    let sel = selector("position(bytes32,address)");
+    let mut args: Vec<u8> = Vec::new(); 
 
     // bytes32
-    calldata.extend_from_slice(market_id);
-
+    args.extend_from_slice(market_id);
     // address -> padding ABI
     let mut addr = [0u8; 32];
     addr[12..].copy_from_slice(user.as_slice());
-    calldata.extend_from_slice(&addr);
+    args.extend_from_slice(&addr);
 
+    let  calldata = encode_calldata(sel, &args);
     let resp = conn
         .call_raw(morpho_addr, calldata)
         .await

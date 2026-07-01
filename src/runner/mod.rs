@@ -31,7 +31,7 @@ impl Runner {
         };
 
         let cache = Arc::new(MarketCache::new(&[]));
-        let conn = connector::build(&config.main_rpc, &config.ws_rpc, config.signer.clone()).await?;
+        let conn = connector::build(&config.main_rpc, &config.ws_rpc, config.signer.clone(), chainid, 200).await?;
         let connector = Arc::new(conn); 
         let route_cache = Arc::new(RwLock::new(RouteCache::new()));
         Ok(Self { config, cache, connector, route_cache })

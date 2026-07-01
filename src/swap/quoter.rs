@@ -34,7 +34,7 @@ impl UniswapV3 {
         let mut hi = amount_in;
         let mut best: Option<PoolEdge> = None;
 
-        for _ in 0..6 {
+        for _ in 0..12 {
             if lo > hi { break; }
             let mid = (lo + hi) >> 1;
 
