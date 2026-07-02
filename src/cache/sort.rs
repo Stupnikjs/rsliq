@@ -40,7 +40,7 @@ impl MarketCache {
         });
     });
 }
-    pub fn lowest_hf_and_interval(&self, id: FixedBytes<32>) -> (Option<BorrowPosition>, u64) {
+    pub fn lowest_hf_and_interval(&self, id: FixedBytes<32>, is_correlated: bool) -> (Option<BorrowPosition>, u64) {
     let Some(snap) = self.snapshot(id) else {
     return (None, 3600);
     };
@@ -52,15 +52,29 @@ impl MarketCache {
         return (Some(first), 3600);
     };
 
+    
     let interval = if hf < WAD {
         0
-    } else if hf < WAD * U256::from(105u64) / U256::from(100u64) {
+    } 
+    else if  hf < WAD * U256::from(1001u64) / U256::from(1000u64) && is_correlated  {
+        2
+    }
+     else if  hf < WAD * U256::from(1002u64) / U256::from(1000u64) && is_correlated  {
+        20
+    }
+    else if hf < WAD * U256::from(1005u64) / U256::from(1000u64) && !is_correlated { 
+        1
+    }
+    else if hf < WAD * U256::from(101u64) / U256::from(100u64) && !is_correlated { 
+        2
+    }
+    else if hf < WAD * U256::from(105u64) / U256::from(100u64) && !is_correlated { 
         100
-    } else if hf < WAD * U256::from(110u64) / U256::from(100u64) {
+    } else if hf < WAD * U256::from(110u64) / U256::from(100u64) && !is_correlated {
         300
-    } else if hf < WAD * U256::from(120u64) / U256::from(100u64) {
+    } else if hf < WAD * U256::from(120u64) / U256::from(100u64) && !is_correlated{
         600
-    } else if hf < WAD * U256::from(150u64) / U256::from(100u64) {
+    } else if hf < WAD * U256::from(150u64) / U256::from(100u64) && !is_correlated {
         7_200
     } else {
         12_400

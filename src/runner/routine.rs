@@ -40,13 +40,12 @@ impl Runner  {
                         let _ = cache.onchain_market_refresh(&connector, morpho_addr, id).await;
                         cache.sort_by_hf(id);
                     }
-                  
-                    let (lowest, interval) = cache.lowest_hf_and_interval(id);
+                    let mparam = cache.get_market_param_by_id(id).expect("cat find mparam");
+                    let (lowest, interval) = cache.lowest_hf_and_interval(id, mparam.is_eth_correlated() || mparam.is_btc_correlated());
                     if let (Some(pos), 0) = (lowest, interval) {
                         let route = route_cache.read().unwrap().get_edge(&pos.market_id).cloned();
-                        let mparam = cache.get_market_param_by_id(pos.market_id);
-
-                        if let (Some(route), Some(mparam)) = (route, mparam) {
+                
+                        if let Some(route) = route {
                             liquidate::liquidate(&connector, pos, route, mparam, liquidator_addr).await;
                         }
                 }

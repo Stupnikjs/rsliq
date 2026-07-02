@@ -1,0 +1,10 @@
+{
+  "pair": "USR/USDC",
+  "ts": 1782996285738,
+  "total_positions": 62,
+  "positions_below_5pct": 1,
+  "positions_below_20pct": 1,
+  "positions_below_50pct": 52,
+  "total_borrowed_collateral_equiv": "3848761114527514187080001",
+  "price_normalized": 1.0002223094104896
+}

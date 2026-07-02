@@ -1,0 +1,10 @@
+{
+  "pair": "cbETH/USDC",
+  "ts": 1782996284596,
+  "total_positions": 16,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "323551412227808235059",
+  "price_normalized": 1881.7516430103587
+}

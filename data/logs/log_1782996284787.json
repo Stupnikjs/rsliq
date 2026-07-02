@@ -1,0 +1,10 @@
+{
+  "pair": "WETH/USDC",
+  "ts": 1782996284787,
+  "total_positions": 5315,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "39122354452401242559888",
+  "price_normalized": 1659.6366338455075
+}

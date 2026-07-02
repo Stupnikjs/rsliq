@@ -1,0 +1,10 @@
+{
+  "pair": "cbLTC/USDC",
+  "ts": 1782996284777,
+  "total_positions": 331,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "1370648893694",
+  "price_normalized": 42.90933296
+}

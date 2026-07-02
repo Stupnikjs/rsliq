@@ -1,0 +1,10 @@
+{
+  "pair": "SOL/USDC",
+  "ts": 1782996284779,
+  "total_positions": 970,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "35889620803209",
+  "price_normalized": 81.05306999999999
+}

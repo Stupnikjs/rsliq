@@ -1,0 +1,10 @@
+{
+  "pair": "cbETH/WETH",
+  "ts": 1782996284709,
+  "total_positions": 194,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "792704071256225652053",
+  "price_normalized": 1.1338335179130106
+}

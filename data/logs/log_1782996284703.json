@@ -1,0 +1,10 @@
+{
+  "pair": "USDe/USDC",
+  "ts": 1782996284703,
+  "total_positions": 25,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "172008048988941000000000000",
+  "price_normalized": 1.0
+}

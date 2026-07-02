@@ -1,0 +1,10 @@
+{
+  "pair": "cbADA/USDC",
+  "ts": 1782996284778,
+  "total_positions": 11,
+  "positions_below_5pct": 0,
+  "positions_below_20pct": 0,
+  "positions_below_50pct": 0,
+  "total_borrowed_collateral_equiv": "4970771563080",
+  "price_normalized": 0.160407
+}
