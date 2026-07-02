@@ -1,7 +1,7 @@
 // src/swap/uniswap.rs
 use std::time::{Duration, Instant};
 use alloy::primitives::{Address, U256, Bytes};
-use crate::swap::PoolEdge;
+use crate::swap::{PoolEdge, now_ms};
 use crate::connector::Connector;
 use crate::abi::encode::{encode_address, encode_uint256,selector}; 
 use crate::swap::abi::uni::encode_quote_single_exact_input; 
@@ -109,7 +109,7 @@ impl UniswapV3 {
             wc_slippage: compute_slippage(amount_in, amount_out, oracle_price),
             wc_amount_in: amount_in,
             wc_amount_out: amount_out,
-            calibrated_at: Instant::now(),
+            calibrated_at: now_ms(),
             dex_name: self.name.clone(),
             amount_in_offset: 164, // uniswap offset
             price_at_quote: oracle_price,

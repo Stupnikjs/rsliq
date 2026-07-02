@@ -118,7 +118,7 @@ pub async fn position_call(
 
 
 // price() call on oracle morpho 
-
+// exponent = 36 + loan_decimals - collateral_decimals
 
 pub async fn oracle_call(conn: &Connector, oracle_addr: Address) -> Result<U256, anyhow::Error> {
     let selector = selector("price()");

@@ -3,20 +3,21 @@ mod refresh;
 pub mod positions;
 mod events;
 mod sort; 
-mod logs;
+pub mod logs;
 
 
 use alloy_primitives::{Address, U256, FixedBytes};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use crate::morpho::types::MarketParam;
+use crate::morpho::utils::WAD; 
 use crate::api::market::{fetch_all_market_by_chainid}; 
 use crate::api::pos::{fetch_all_positions, position_item_to_borrow_pos}; 
 use positions::BorrowPosition;
 use futures::stream::{self, StreamExt};
 
-pub type MarketId = FixedBytes<32>;
-pub const WAD: U256 = U256::from_limbs([1_000_000_000_000_000_000, 0, 0, 0]);
+
+
 
 #[derive(Default, Clone)]
 pub struct MarketStats {
@@ -31,25 +32,24 @@ pub struct Market {
     pub params: Arc<MarketParam>,
     pub canceled: bool,
     pub stats: MarketStats,
-    pub active_index: usize,
     pub positions: Vec<BorrowPosition>, // trié par HF asc
 }
 
 pub struct MarketSnapshot {
-    pub id: MarketId,
+    pub id: FixedBytes<32>,
     pub params: Arc<MarketParam>,
     pub stats: MarketStats,
     pub positions: Vec<BorrowPosition>,
 }
 
 pub struct MarketCache {
-    markets: RwLock<HashMap<MarketId, Arc<RwLock<Market>>>>,
+    markets: RwLock<HashMap<FixedBytes<32>, Arc<RwLock<Market>>>>,
 }
 
 
 impl MarketCache {
     pub fn new(markets: &[MarketParam]) -> Self {
-        let map: HashMap<MarketId, Arc<RwLock<Market>>> = markets
+        let map: HashMap<FixedBytes<32>, Arc<RwLock<Market>>> = markets
             .iter()
             .map(|m| {
                 // On copie et transfère les vrais paramètres ici !
@@ -57,11 +57,10 @@ impl MarketCache {
                     params: Arc::new(m.clone()),
                     canceled: false,
                     stats: MarketStats::default(), // Les stats globales (volumes) seront mis à jour par l'indexeur
-                    active_index: 0,
                     positions: Vec::new(), // Le tableau de positions démarre vide
                 };
                 
-                let id_bytes: MarketId = m.id.into(); 
+                let id_bytes: FixedBytes<32> = m.id.into(); 
                 (id_bytes, Arc::new(RwLock::new(market)))
             })
             .collect();
@@ -80,7 +79,7 @@ impl MarketCache {
             .collect()
     }
 
-    pub fn get_market_param_by_id(&self, id: MarketId) -> Option<MarketParam> {
+    pub fn get_market_param_by_id(&self, id: FixedBytes<32>,) -> Option<MarketParam> {
     self.markets
         .read()
         .unwrap()
@@ -88,7 +87,7 @@ impl MarketCache {
         .map(|m| (*m.read().unwrap().params).clone())
 } 
 
-    pub fn update<F, R>(&self, id: MarketId, f: F) -> Option<R>
+    pub fn update<F, R>(&self, id:FixedBytes<32>, f: F) -> Option<R>
 where
     F: FnOnce(&mut Market) -> R,
 {
@@ -107,7 +106,7 @@ where
     Some(f(&mut market))
 }
 
-    pub fn snapshot(&self, id: MarketId) -> Option<MarketSnapshot>
+    pub fn snapshot(&self, id: FixedBytes<32>,) -> Option<MarketSnapshot>
     where
         BorrowPosition: Clone,
     {

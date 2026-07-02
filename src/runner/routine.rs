@@ -1,10 +1,12 @@
-use crate::runner::Runner; 
+use crate::runner::{Runner, liquidate}; 
+use std::fs;
 use std::sync::Arc;
 use std::str::FromStr;
-use crate::liquidate;
+
 use tokio::time::Duration;
-use crate::cache::{MarketCache, WAD};
+use crate::cache::{MarketCache, logs::write_market_log};
 use crate::swap::quoter::UniswapV3;
+use crate::morpho::utils::WAD;
 
 
 impl Runner  {
@@ -21,9 +23,7 @@ impl Runner  {
     }
 
     pub async fn market_loop(&self) {
-        println!("market loop {}", "here");
         for id in self.cache.ids() {
-            println!("market loop {}", "in inner loop");
             let cache = Arc::clone(&self.cache);
             let morpho_addr = self.config.morpho_addr.clone(); 
             let connector = Arc::clone(&self.connector);
@@ -31,10 +31,9 @@ impl Runner  {
             let mut count = 0u64;
             let liquidator_addr = self.config.liquidator_addr.clone(); 
             tokio::spawn(async move {
-                loop {
-                    
+                loop { 
                     let _ = cache.onchain_oracle_refresh(&connector, id).await;
-                    cache.log_market(id);
+                    
                     cache.recompute_all_hf(id);
 
                     if count % 10 == 0 {
@@ -43,7 +42,6 @@ impl Runner  {
                     }
                   
                     let (lowest, interval) = cache.lowest_hf_and_interval(id);
-                    println!("interval {} s", interval);
                     if let (Some(pos), 0) = (lowest, interval) {
                         let route = route_cache.read().unwrap().get_edge(&pos.market_id).cloned();
                         let mparam = cache.get_market_param_by_id(pos.market_id);
@@ -53,6 +51,8 @@ impl Runner  {
                         }
                 }
 
+                    let snap = cache.snapshot(id).expect("snap not found");
+                    let _ = write_market_log(&snap, "data/logs");
                     count += 1;
                     tokio::time::sleep(Duration::from_secs(interval)).await;
                 }
@@ -89,7 +89,15 @@ impl Runner  {
             let mut route_cache = self.route_cache.write().unwrap(); 
             route_cache.edges.push(edge);
         }
-        println!("{:?}", route_cache.read().unwrap().edges);
+         Ok(())
+    }
+    pub fn load_quote(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let edges_json = fs::read_to_string("data/edges.json")?;
+        let edges = serde_json::from_str::<Vec<crate::swap::PoolEdge>>(&edges_json)?;
+        let mut route_cache = self.route_cache.write().unwrap(); 
+        for edge in edges {
+            route_cache.edges.push(edge);
+        }
          Ok(())
     }
 }

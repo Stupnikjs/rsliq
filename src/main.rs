@@ -5,11 +5,9 @@ mod morpho;
 mod api;
 mod cache; 
 pub mod connector;
-
-mod config;
 pub mod runner; 
 pub mod swap;
-mod liquidate;
+
 pub mod abi; 
 
 use std::sync::Arc;
@@ -31,7 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let chainint:u64 = chain.parse()?;
     let mut runner  = runner::Runner::new(8453).await.expect("failed runner new func");
     runner.init().await.expect(""); 
-    runner.run().await.expect(""); 
+    let runner = Arc::new(runner);
+    let _  = runner.run().await; 
     
     
     tokio::signal::ctrl_c().await?;

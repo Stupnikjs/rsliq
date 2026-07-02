@@ -71,7 +71,6 @@ pub fn update_accrue_interest(&self, log: &Log) {
 
     let market_id = FixedBytes::from(log.topics()[1]);
     let interest = read_u256(&log.data().data, 32);
-    println!("accrue interest {}", interest); 
     self.update(market_id, |m| {
         m.stats.total_borrow_assets += interest;
     });

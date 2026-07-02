@@ -1,8 +1,11 @@
 #![allow(dead_code, unused_variables, unused_imports)]
 use alloy::primitives::U256;
 
+use crate::morpho::types::MarketParam;
+
 pub mod types;
 pub mod calls; 
+pub mod utils;
 
 fn wad() -> U256 {
     U256::from(10u64).pow(U256::from(18))

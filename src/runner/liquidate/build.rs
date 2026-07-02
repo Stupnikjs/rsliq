@@ -4,7 +4,7 @@ use crate::abi::encode::{selector, encode_address, encode_uint256};
 use crate::swap::{SwapStep,PoolEdge};
 use crate::swap::abi;
 use crate::morpho::types::MarketParam;
-use crate::liquidate::encode::encode_liquidate; 
+use crate::runner::liquidate::encode::encode_liquidate; 
 
 pub struct Liquidable {
     pub borrower: Address,

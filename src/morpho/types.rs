@@ -3,7 +3,6 @@ use alloy_primitives::{Address, FixedBytes, U256, address};
 
 // Constante vérifiée à la compilation
 pub const IRM: Address = address!("0x46415998764C29aB2a25CbeA6254146D50D22687");
-pub const WAD: U256 = U256::from_limbs([1_000_000_000_000_000_000, 0, 0, 0]);
 
 #[derive(Debug, Clone, Default)]
 pub struct MarketParam {

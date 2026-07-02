@@ -1,6 +1,6 @@
 use alloy_primitives::{FixedBytes, U256};
-use crate::cache::{MarketCache, positions::BorrowPosition,WAD};
-
+use crate::cache::{MarketCache, positions::BorrowPosition};
+use crate::morpho::utils::{WAD}; 
 
 
 impl MarketCache {
@@ -55,15 +55,15 @@ impl MarketCache {
     let interval = if hf < WAD {
         0
     } else if hf < WAD * U256::from(105u64) / U256::from(100u64) {
-        5
+        100
     } else if hf < WAD * U256::from(110u64) / U256::from(100u64) {
-        15
-    } else if hf < WAD * U256::from(120u64) / U256::from(100u64) {
-        60
-    } else if hf < WAD * U256::from(150u64) / U256::from(100u64) {
         300
+    } else if hf < WAD * U256::from(120u64) / U256::from(100u64) {
+        600
+    } else if hf < WAD * U256::from(150u64) / U256::from(100u64) {
+        7_200
     } else {
-        3600
+        12_400
     };
 
     (Some(first), interval)
