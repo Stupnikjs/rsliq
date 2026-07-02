@@ -1,5 +1,5 @@
 [package]
-name = "rs_liq"
+name = "rsliq"
 version = "0.1.0"
 edition = "2021"
 
@@ -27,3 +27,9 @@ reqwest = { version = "0.13.4", features = ["json"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 tokio = { version = "1.52.3", features = ["full"] }
+
+
+# --- AJOUTE ÇA ---
+[dev-dependencies]
+tempfile = "3"
+# Si tu as besoin d'autres crates UNIQUEMENT pour les tests, c'est ici qu'ils vont

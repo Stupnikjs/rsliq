@@ -43,9 +43,9 @@ pub fn load_base_config() -> Result<Config, anyhow::Error> {
     dotenvy::dotenv().ok();
     Ok(Config {
         chain_id: 8453,
-        main_rpc:String::from_str("https://lb.drpc.live/base/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv")?,  // var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set") ,
-        second_rpc: String::new(),
-        ws_rpc: String::from_str("wss://lb.drpc.live/base/AhuxMhCqfkI8pF_0y4Fpi89GWcIMFIwR8ZsatuZZzRRv")?,
+        main_rpc:var("ALCHEMY_BASE_HTTP").expect("ALCHEMY_BASE_HTTP not set"),  // var("BASE_HTTP_DRPC").expect("BASE_HTTP_DRPC not set") ,
+        second_rpc: var("DRPC_BASE_HTTP").expect("DRPC_BASE_HTTP not set"),
+        ws_rpc: var("ALCHEMY_BASE_WS").expect("ALCHEMY_BASE_WS not set"),
         morpho_addr: runner::config::address::MORPHO_MAINNET,
         liquidator_addr: runner::config::address::BASE_LIQUIDATOR_LAST,
         dexes: vec![new_dex_config(address::BASE_UNISWAP_QUOTER_V2, address::BASE_UNISWAP_V3_ROUTER, DexesName::UniswapV3)] ,
